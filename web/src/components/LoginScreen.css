@@ -1,0 +1,231 @@
+/* Reset e acessibilidade */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'OpenDyslexic', 'Open Sans', Arial, sans-serif;
+  font-size: 18px; /* tamanho mínimo recomendado */
+  line-height: 1.6; /* espaçamento maior entre linhas */
+  background: linear-gradient(135deg, #ffe082, #ffcc80); /* fundo suave amarelo-pêssego */
+  height: 100%;
+  overflow: hidden;
+  color: #222; /* texto preto para contraste */
+}
+
+
+/* Logo sobrepondo o card */
+.login-logo {
+  position: absolute;
+  top: -80px; /* altura que sobe acima do card */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px; /* aumenta ou diminui o tamanho da logo */
+  max-width: 90%;
+  z-index: 2;
+  animation: bounceIn 1s ease;
+}
+
+/* Mantém altura fixa, não cresce com a logo */
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Animação de entrada */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Título */
+.login-title {
+  font-size: 2.5em;
+  margin: 0 0 10px 0;
+  color: #e65100; /* laranja forte */
+  font-weight: 800;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Subtítulo */
+.login-subtitle {
+  font-size: 1.2em;
+  margin: 10px 0 25px;
+  color: #444;
+  font-weight: 600;
+}
+
+/* Formulário */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-input {
+  padding: 18px;
+  border-radius: 15px;
+  border: 2px solid #ff9800;
+  font-size: 1.1em;
+  outline: none;
+  transition: 0.3s;
+  background: #fff3e0;
+  letter-spacing: 0.05em; /* espaçamento entre letras */
+}
+
+.login-input:focus {
+  border-color: #f57c00;
+  box-shadow: 0 0 12px rgba(255,152,0,0.5);
+}
+
+.login-btn {
+  padding: 18px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  letter-spacing: 0.05em;
+}
+
+.login-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.3);
+}
+
+/* Bolhas animadas no fundo */
+.bubbles {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.bubbles span {
+  position: absolute;
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  animation: rise 10s infinite ease-in;
+}
+
+.bubbles span:nth-child(1) { left: 10%; animation-delay: 0s; }
+.bubbles span:nth-child(2) { left: 25%; animation-delay: 2s; width: 25px; height: 25px; }
+.bubbles span:nth-child(3) { left: 50%; animation-delay: 4s; }
+.bubbles span:nth-child(4) { left: 70%; animation-delay: 6s; width: 30px; height: 30px; }
+.bubbles span:nth-child(5) { left: 90%; animation-delay: 1s; }
+
+@keyframes rise {
+  0% { bottom: -30px; opacity: 0; }
+  50% { opacity: 0.7; }
+  100% { bottom: 110%; opacity: 0; }
+}
+/* Logo fora do card */
+.login-logo {
+  display: block;
+  width: 350px; /* ajuste o tamanho que quiser */
+  max-width: 90%;
+  margin: 0 auto 30px auto;
+  animation: bounceIn 1s ease;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Container central */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  position: relative;
+  padding: 10px;
+}
+
+/* Cartão de login */
+.login-card {
+  background: #fff8e1;
+  border-radius: 25px;
+  padding: 200px 40px 40px 40px; /* padding normal */
+  text-align: left;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+  width: 400px;
+  max-width: 95%;
+  position: relative; /* referência para logo */
+  z-index: 1;
+  transition: transform 0.3s, box-shadow 0.3s;
+  animation: cardEnter 1s ease-out;
+}
+
+/* Logo sobrepondo o card */
+.login-logo {
+  position: absolute;
+  top: 150px;  /* sobe acima do card */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px; /* tamanho da logo */
+  max-width: 90%;
+  z-index: 2;
+  pointer-events: none; /* evita bloquear clique nos inputs */
+  animation: bounceIn 1s ease;
+}
+
+/* Animação da logo */
+@keyframes bounceIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* Formulário dentro do card */
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Input */
+.login-input {
+  padding: 18px;
+  border-radius: 15px;
+  border: 2px solid #ff9800;
+  font-size: 1.1em;
+  outline: none;
+  transition: 0.3s;
+  background: #fff3e0;
+  letter-spacing: 0.05em;
+}
+
+.login-input:focus {
+  border-color: #f57c00;
+  box-shadow: 0 0 12px rgba(255,152,0,0.5);
+}
+
+/* Botão */
+.login-btn {
+  padding: 18px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: #fff;
+  font-size: 1.2em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+  letter-spacing: 0.05em;
+}
+
+.login-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.3);
+}

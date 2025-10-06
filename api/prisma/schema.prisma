@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Level {
+  INICIAL
+  BASICO
+  INTERMEDIARIO
+  AVANCADO
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attempts Attempt[]
+  progress Progress?
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  level       Level
+  mediaUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  attempts Attempt[]
+}
+
+model Attempt {
+  id          String    @id @default(cuid())
+  userId      String
+  activityId  String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  correct     Boolean
+  score       Int       @default(0)
+  details     Json?
+
+  user     User     @relation(fields: [userId], references: [id])
+  activity Activity @relation(fields: [activityId], references: [id])
+
+  @@index([userId])
+  @@index([activityId])
+}
+
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  level     Level    @default(INICIAL)
+  xp        Int      @default(0)
+  streak    Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
