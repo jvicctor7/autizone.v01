@@ -88,73 +88,59 @@ export default function MainScreen({ logout }) {
     }
   };
 
-  const voltar = () => {
-    if (fase > 0) {
-      setFase(fase - 1);
-    } else {
-      setPalavraAtual(null);
-    }
-  };
-
   const renderFase = () => {
-  if (!palavraAtual) return null;
+    if (!palavraAtual) return null;
 
-  const fonemas = palavraAtual.split("");
-  const silabas = palavraAtual.match(/.{1,2}/g) || [];
+    const fonemas = palavraAtual.split("");
+    const silabas = palavraAtual.match(/.{1,2}/g) || [];
 
-  let conteudo;
-  if (fase === 0) {
-    conteudo = (
-      <div className="word-phase">
-        <h3>🔤 Treinando Fonemas</h3>
-        <div className="sound-buttons">
-          {fonemas.map((f, i) => (
-            <button key={i} className="sound-btn" onClick={() => falar(f)}>
-              {f}
-            </button>
-          ))}
+    let conteudo;
+    if (fase === 0) {
+      conteudo = (
+        <div className="word-phase">
+          <h3>🔤 Treinando Fonemas</h3>
+          <div className="sound-buttons">
+            {fonemas.map((f, i) => (
+              <button key={i} className="sound-btn" onClick={() => falar(f)}>
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-    );
-  } else if (fase === 1) {
-    conteudo = (
-      <div className="word-phase">
-        <h3>📝 Montando Sílabas</h3>
-        <div className="sound-buttons">
-          {silabas.map((s, i) => (
-            <button key={i} className="sound-btn" onClick={() => falar(s)}>
-              {s}
-            </button>
-          ))}
+      );
+    } else if (fase === 1) {
+      conteudo = (
+        <div className="word-phase">
+          <h3>📝 Montando Sílabas</h3>
+          <div className="sound-buttons">
+            {silabas.map((s, i) => (
+              <button key={i} className="sound-btn" onClick={() => falar(s)}>
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
+      );
+    } else {
+      conteudo = (
+        <div className="word-phase">
+          <h3>✅ Palavra Completa</h3>
+          <button className="sound-btn highlight" onClick={() => falar(palavraAtual)}>
+            {palavraAtual}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fase-container">
+        {conteudo}
+        <button className="next-phase-btn" onClick={proximo}>
+          Próximo ➡
+        </button>
       </div>
     );
-  } else {
-    conteudo = (
-      <div className="word-phase">
-        <h3>✅ Palavra Completa</h3>
-        <button className="sound-btn highlight" onClick={() => falar(palavraAtual)}>
-          {palavraAtual}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fase-container">
-      {conteudo}
-
-      <div className="fase-controls">
-        <button className="nav-phase-btn back" onClick={voltar}>
-          ← Voltar
-        </button>
-        <button className="nav-phase-btn next" onClick={proximo}>
-          Próximo →
-        </button>
-      </div>
-    </div>
-  );
-};
+  };
 
   // ====== ArteZone ======
   useEffect(() => {
@@ -243,37 +229,30 @@ export default function MainScreen({ logout }) {
         <p>{xp < 30 ? `Faltam ${30 - xp} XP para desbloquear o jogo` : "🎉 Jogo desbloqueado!"}</p>
       </div>
 
-     <div className="levels-grid">
-  {[1, 2, 3].map((n) => (
-    <div
-      key={n}
-      className={`level-card ${nivelCompleto[n] ? "completed" : ""} ${nivelSelecionado === n ? "selected" : ""}`}
-    >
-      <h3>🏆 Nível {n}</h3>
-
-      {nivelSelecionado === n && <span className="tag-atual">Nível atual</span>}
-
-      {!nivelSelecionado && (
-        <button className="select-btn" onClick={() => iniciarNivel(n)}>
-          Iniciar Nível
-        </button>
-      )}
-
-      {nivelSelecionado === n && !palavraAtual && (
-        <div className="word-selection">
-          {niveis[n].map((p, i) => (
-            <button key={i} className="word-btn" onClick={() => escolherPalavra(p)}>
-              {p}
-            </button>
-          ))}
-          <button className="cancel-btn" onClick={() => setNivelSelecionado(null)}>❌ Voltar</button>
-        </div>
-      )}
-
-      {nivelCompleto[n] && <span className="done-tag">✔ Concluído!</span>}
-    </div>
-  ))}
-</div>
+      {/* Níveis */}
+      <div className="levels-grid">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className={`level-card ${nivelCompleto[n] ? "completed" : ""}`}>
+            <h3>🏆 Nível {n}</h3>
+            {!nivelSelecionado && (
+              <button className="select-btn" onClick={() => iniciarNivel(n)}>
+                Iniciar Nível
+              </button>
+            )}
+            {nivelSelecionado === n && !palavraAtual && (
+              <div className="word-selection">
+                {niveis[n].map((p, i) => (
+                  <button key={i} className="word-btn" onClick={() => escolherPalavra(p)}>
+                    {p}
+                  </button>
+                ))}
+                <button className="cancel-btn" onClick={() => setNivelSelecionado(null)}>❌ Voltar</button>
+              </div>
+            )}
+            {nivelCompleto[n] && <span className="done-tag">✔ Concluído!</span>}
+          </div>
+        ))}
+      </div>
 
       {renderFase()}
 

@@ -1,52 +1,54 @@
 /* ================================
-   Reset e Base
+   Reset e Base (ESCOPO: atividades)
 ================================= */
 @import url('https://fonts.googleapis.com/css2?family=OpenDyslexic&display=swap');
 
-html, body {
+.main-container {
   margin: 0;
   padding: 0;
-  min-height: 100%;
+  padding-top: 80px;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
   font-family: "Comic Neue", "Arial Rounded MT Bold", sans-serif;
   background: linear-gradient(135deg, #672b9b 0%, #583286 50%, #9c78c2 100%);
   position: relative;
 }
+
 /* ================================
    Fundo com Logo "Gota d'Água"
 ================================= */
-.body-bg-logo {
-  position: fixed; /* fixa no fundo da tela */
-  bottom: -50px;   /* ajusta a posição vertical */
-  right: -50px;    /* ajusta a posição horizontal */
-  width: 400px;    /* tamanho da "gota", ajuste conforme quiser */
+.main-container .body-bg-logo {
+  position: fixed;
+  bottom: -50px;
+  right: -50px;
+  width: 400px;
   height: auto;
-  opacity: 0.1;    /* deixa transparente para não atrapalhar */
-  z-index: 0;      /* fica atrás de todo conteúdo */
-  pointer-events: none; /* não bloqueia cliques */
-  transform: rotate(-20deg); /* opcional, deixa inclinada como "gota" */
+  opacity: 0.1;
+  z-index: 0;
+  pointer-events: none;
+  transform: rotate(-20deg);
 }
 
 /* ================================
-   Fundo Animado (bolhas/estrelas)
+   Fundo Animado
 ================================= */
-body::before {
+.main-container::before {
   content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  position: fixed;
+  inset: 0;
   background-image: radial-gradient(white 2px, transparent 2px);
   background-size: 40px 40px;
   animation: twinkle 4s infinite linear;
   opacity: 0.4;
   pointer-events: none;
+  z-index: 0;
 }
 @keyframes twinkle {
   from { background-position: 0 0; }
   to { background-position: 40px 40px; }
 }
-body::after {
+.main-container::after {
   content: "";
   position: fixed;
   bottom: -50px;
@@ -61,113 +63,70 @@ body::after {
 }
 
 /* ================================
-   Navbar Cartoon Divertida
-================================= */
-/* ================================
-   Navbar Minimalista
-================================= */
-
-/* ================================
-   Navbar Minimalista com Logo
+   Navbar
 ================================= */
 .navbar {
   position: fixed;
   top: 0; left: 0;
   width: 100%;
   z-index: 1000;
-
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  background: rgba(255, 140, 0, 0.85); /* Laranja translúcido */
+  background: rgba(255, 140, 0, 0.85);
   backdrop-filter: blur(8px);
   padding: 10px 25px;
-  border-bottom: 1px solid rgba(255, 165, 0, 0.4); /* borda laranja suave */
+  border-bottom: 1px solid rgba(255, 165, 0, 0.4);
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-
-/* Botão logout recuado */
-/* Botão logout com fundo branco e texto laranja */
 .logout-btn {
-  background: #ffffff;           /* fundo branco */
-  border: 2px solid #7a1e84; /* borda laranja */
-  color: #55186d;             /* texto laranja */
+  background: #ffffff;
+  border: 2px solid #7a1e84;
+  color: #55186d;
   padding: 6px 16px;
   border-radius: 25px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
-  margin-right: 45px;         /* recuo da borda direita */
+  margin-right: 45px;
   transition: all 0.3s ease;
 }
-
 .logout-btn:hover {
-  background: #69177d; /* fundo laranja ao passar o mouse */
-  color: #ffffff;         /* texto branco ao passar o mouse */
+  background: #69177d;
+  color: #ffffff;
   transform: scale(1.05);
 }
-/* Logo à esquerda */
 .nav-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-
 .logo-img {
   display: block;
   height: 60px;
+  max-height: 64px;
   width: auto;
   object-fit: contain;
+  margin-top: -4px;
   transition: transform 0.25s ease;
 }
-
-.logo-img:hover {
-  transform: scale(1.06);
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: visible; /* permite a logo “sair” um pouco sem aumentar a barra */
-}
-
-.logo-img {
-  display: block;
-  height: 60px;       /* aumenta o tamanho visual */
-  max-height: 64px;   /* trava para não estourar */
-  width: auto;
-  object-fit: contain;
-  margin-top: -4px;   /* pequeno “ajuste” para não engordar a barra */
-  transition: transform 0.25s ease;
-}
-
-.logo-img:hover {
-  transform: scale(1.06);
-}
-.nav-left h2 {
+.logo-img:hover { transform: scale(1.06); }
+.logo-text {
   font-size: 1.6rem;
   font-weight: 800;
   margin: 0;
-  color: #fff; /* texto branco sólido */
+  color: #fff;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   font-family: "Poppins", sans-serif;
-
-  /* remove gradiente */
-  background: none;
-  -webkit-background-clip: unset;
-  -webkit-text-fill-color: unset;
 }
-
-
-
 
 /* ================================
    Dashboard de XP
 ================================= */
 .xp-dashboard-block {
+  position: relative;
+  z-index: 1;
   background: #fff;
   border-radius: 20px;
   padding: 20px;
@@ -176,14 +135,12 @@ body::after {
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   max-width: 600px;
 }
-
 .xp-dashboard-block h3 {
   font-size: 1.4rem;
   margin-bottom: 10px;
   color: #444;
   font-weight: bold;
 }
-
 .xp-bar-container {
   background: #e0e0e0;
   border-radius: 15px;
@@ -192,22 +149,24 @@ body::after {
   margin: 12px 0;
 }
 .xp-bar {
-  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  background: linear-gradient(90deg, #FB8C00, #F4511E);
   height: 100%;
+  border-radius: 15px;
   transition: width 0.5s ease;
 }
 
 /* ================================
-   Cards dos Níveis (cartinhas)
+   Cards dos Níveis
 ================================= */
 .levels-grid {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: center;
   gap: 20px;
   flex-wrap: wrap;
   margin-bottom: 25px;
 }
-
 .level-card {
   background: #ffffff;
   padding: 20px;
@@ -218,16 +177,12 @@ body::after {
   width: 260px;
   transition: transform 0.3s ease;
 }
-.level-card:hover {
-  transform: translateY(-8px) rotate(-1deg);
-}
+.level-card:hover { transform: translateY(-8px) rotate(-1deg); }
 .level-card h3 {
   margin-bottom: 12px;
   font-size: 1.3rem;
   color: #444;
 }
-
-/* Botões coloridos com efeito bounce */
 .select-btn, .word-btn, .cancel-btn {
   display: block;
   margin: 10px auto;
@@ -245,7 +200,6 @@ body::after {
   transform: scale(1.1) translateY(-3px);
   background: linear-gradient(135deg, #836fff, #6a5acd);
 }
-
 .done-tag {
   display: inline-block;
   margin-top: 10px;
@@ -257,367 +211,175 @@ body::after {
   font-size: 0.9rem;
 }
 
+/* Destaque do nível atual */
+.level-card.selected {
+  border: 3px solid #ff9800;
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.7);
+  transform: scale(1.05);
+}
+.tag-atual {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: white;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 /* ================================
    Fases do jogo
 ================================= */
-.word-phase {
-  margin: 25px 0;
-  text-align: center;
-}
-.sound-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-}
+.word-phase { margin: 25px 0; text-align: center; }
+.sound-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .sound-btn {
-  padding: 14px 24px;
-  border: none;
-  border-radius: 18px;
-  background: #ffcc00;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1.1rem;
+  padding: 14px 24px; border: none; border-radius: 18px;
+  background: #ffcc00; font-weight: bold; cursor: pointer; font-size: 1.1rem;
   transition: all 0.2s ease;
 }
-.sound-btn:hover {
-  background: #ffdb4d;
-  transform: scale(1.1);
-}
+.sound-btn:hover { background: #ffdb4d; transform: scale(1.1); }
 
-.next-phase-btn {
-  margin-top: 18px;
-  padding: 12px 24px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: all 0.2s ease;
+/* ================================
+   Botões Voltar/Próximo (estilo card)
+================================= */
+.fase-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
 }
+.nav-phase-btn,
+.next-phase-btn {
+  background: #ffffff;
+  color: #7a3d00;
+  border: 3px solid #ff8c00;
+  border-radius: 16px;
+  padding: 12px 22px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: .2px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12),
+              0 0 10px rgba(255, 215, 0, 0.35);
+  cursor: pointer;
+  transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+.nav-phase-btn:hover,
 .next-phase-btn:hover {
-  background: #43a047;
-  transform: scale(1.05);
+  background: linear-gradient(135deg, #FB8C00, #F4511E);
+  color: #fff;
+  border-color: #F4511E;
+  transform: translateY(-2px);
 }
 
 /* ================================
    Game Interag
 ================================= */
-.game-block {
-  text-align: center;
-  margin-top: 35px;
+.game-container {
+  position: relative; z-index: 1;
+  margin: 40px auto; padding: 30px; max-width: 700px;
+  background: #fff; border-radius: 16px; border: 2px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center;
+  animation: fadeInUp 0.8s ease;
 }
-.game-block h3 {
-  font-size: 1.4rem;
-  margin-bottom: 15px;
-  color: #333;
+.game-container h2 { font-size: 1.8rem; margin-bottom: 10px; color: #333; }
+.game-container p { font-size: 1.1rem; margin-bottom: 20px; color: #555; }
+.game-btn {
+  padding: 15px 25px; font-size: 1.2rem; font-weight: bold; border: none; border-radius: 12px;
+  cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.game-block.locked button {
-  background: #cccccc;
-  cursor: not-allowed;
-  color: white;
-  padding: 12px 22px;
-  border-radius: 15px;
-  font-weight: bold;
+.game-container.unlocked .game-btn {
+  background: linear-gradient(135deg, #36d1dc, #5b86e5); color: #fff;
 }
-.game-block.unlocked button {
-  background: #00c853;
-  color: white;
-  padding: 12px 22px;
-  border: none;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: bold;
-  transition: all 0.3s ease;
+.game-container.unlocked .game-btn:hover {
+  transform: scale(1.05); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
-.game-block.unlocked button:hover {
-  background: #00e676;
-  transform: scale(1.05);
+.game-container.locked .game-btn { background: #ccc; color: #666; cursor: not-allowed; }
+
+/* ================================
+   ArteZone
+================================= */
+.artezone-container {
+  position: relative; z-index: 1;
+  background: #fff; border-radius: 20px; padding: 25px; margin: 40px auto;
+  text-align: center; max-width: 700px; box-shadow: 0 6px 14px rgba(0,0,0,0.2);
 }
+.artezone-container h2 {
+  font-family: 'OpenDyslexic'; font-size: 1.8rem; color: #470a8e; margin-bottom: 10px;
+  text-shadow: 0 0 6px #ffffff;
+}
+.words-choice { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.arte-btn {
+  background: linear-gradient(135deg, #ff80ab, #ff4081); border: none; border-radius: 15px;
+  padding: 12px 20px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s ease;
+}
+.arte-btn:hover { transform: scale(1.1); background: linear-gradient(135deg, #ff4081, #f50057); }
+#drawCanvas { border: 3px dashed #6a5acd; border-radius: 15px; background: #fafafa; cursor: crosshair; }
+.artezone-actions { margin-top: 15px; display: flex; justify-content: center; gap: 15px; }
+.artezone-btn {
+  background: linear-gradient(135deg, #42a5f5, #1e88e5); border: none; border-radius: 15px;
+  padding: 12px 22px; color: white; font-weight: bold; cursor: pointer; transition: transform 0.2s ease;
+}
+.artezone-btn:hover { transform: scale(1.1); background: linear-gradient(135deg, #1e88e5, #1565c0); }
+#artezone-feedback { margin-top: 20px; text-align: center; }
+#artezone-feedback img { width: 80px; margin-bottom: 10px; }
+#artezone-feedback p { font-size: 1.2rem; font-weight: bold; color: #2e7d32; }
+
+/* ================================
+   Ranking e Galeria
+================================= */
+.ranking-container {
+  position: relative; z-index: 1;
+  margin: 40px auto; padding: 25px; max-width: 800px;
+  background: rgba(255, 255, 255, 0.08); border-radius: 20px; backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 255, 255, 0.15); box-shadow: 0 0 15px rgba(173, 216, 230, 0.3);
+  text-align: center; color: #fff; animation: fadeInUp 1s ease;
+}
+.ranking-container h3 {
+  font-size: 1.8rem; margin-bottom: 15px;
+  background: linear-gradient(90deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.ranking-container h4 {
+  font-size: 1.5rem; margin: 25px 0 15px; color: #ffe066;
+  text-shadow: 0 0 8px rgba(255, 224, 102, 0.7);
+}
+.ranking-stats { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+.stat-card {
+  flex: 1; min-width: 150px;
+  background: linear-gradient(135deg, rgba(0, 255, 200, 0.15), rgba(0, 120, 255, 0.15));
+  border: 2px solid rgba(0, 200, 255, 0.4);
+  border-radius: 16px; padding: 15px;
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 200, 255, 0.6); }
+.stat-card p { font-size: 1rem; margin-bottom: 5px; }
+.stat-card strong { font-size: 1.3rem; color: #00e5ff; }
+.galeria-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+.galeria-item {
+  background: linear-gradient(135deg, #ff6ec7, #7873f5); color: #fff; font-weight: bold;
+  padding: 12px 18px; border-radius: 14px; box-shadow: 0 0 12px rgba(255, 110, 199, 0.6);
+  transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer;
+}
+.galeria-item:hover { transform: translateY(-5px) rotate(-2deg); box-shadow: 0 0 20px rgba(120, 115, 245, 0.8); }
 
 /* ================================
    Responsividade
 ================================= */
 @media (max-width: 768px) {
-  .levels-grid {
-    flex-direction: column;
-    align-items: center;
-  }
-  .level-card {
-    width: 90%;
-  }
-  .navbar {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
-}
-/* ================================
-   ArteZone - Container
-================================= */
-.artezone-container {
-  background: #fff;
-  border-radius: 20px;
-  padding: 25px;
-  margin: 40px auto;
-  text-align: center;
-  max-width: 700px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+  .levels-grid { flex-direction: column; align-items: center; }
+  .level-card { width: 90%; }
+  .navbar { flex-direction: column; gap: 10px; text-align: center; }
 }
 
-.artezone-container h2 {
-  font-family: 'OpenDyslexic';
-  font-size: 1.8rem;
-  color: #470a8e;
-  margin-bottom: 10px;
-  text-shadow: 0 0 6px #ffffff;
-}
-
-.words-choice {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.arte-btn {
-  background: linear-gradient(135deg, #ff80ab, #ff4081);
-  border: none;
-  border-radius: 15px;
-  padding: 12px 20px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.arte-btn:hover {
-  transform: scale(1.1);
-  background: linear-gradient(135deg, #ff4081, #f50057);
-}
-
-#drawCanvas {
-  border: 3px dashed #6a5acd;
-  border-radius: 15px;
-  background: #fafafa;
-  cursor: crosshair;
-}
-
-.artezone-actions {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.artezone-btn {
-  background: linear-gradient(135deg, #42a5f5, #1e88e5);
-  border: none;
-  border-radius: 15px;
-  padding: 12px 22px;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.artezone-btn:hover {
-  transform: scale(1.1);
-  background: linear-gradient(135deg, #1e88e5, #1565c0);
-}
-
-#artezone-feedback {
-  margin-top: 20px;
-  text-align: center;
-}
-#artezone-feedback img {
-  width: 80px;
-  margin-bottom: 10px;
-}
-#artezone-feedback p {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #2e7d32;
-}
-.hidden {
-  display: none;
-}
-.ranking-container {
-  background: #fdf6ff;
-  border-radius: 15px;
-  padding: 15px;
-  margin-top: 20px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-}
-
-.galeria-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.galeria-item {
-  background: #ffe4fa;
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-weight: bold;
-  color: #6a1b9a;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-}
-
-.galeria-item:hover {
-  transform: scale(1.1);
-}
-/* ===== Ranking e Galeria ===== */
-.ranking-container {
-  margin: 40px auto;
-  padding: 25px;
-  max-width: 800px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  backdrop-filter: blur(12px);
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(173, 216, 230, 0.3);
-  text-align: center;
-  color: #fff;
-  animation: fadeInUp 1s ease;
-}
-
-.ranking-container h3 {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  background: linear-gradient(90deg, #00f2fe, #4facfe);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.ranking-container h4 {
-  font-size: 1.5rem;
-  margin: 25px 0 15px;
-  color: #ffe066;
-  text-shadow: 0 0 8px rgba(255, 224, 102, 0.7);
-}
-
-/* Estatísticas em cards */
-.ranking-stats {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  flex: 1;
-  min-width: 150px;
-  background: linear-gradient(135deg, rgba(0, 255, 200, 0.15), rgba(0, 120, 255, 0.15));
-  border: 2px solid rgba(0, 200, 255, 0.4);
-  border-radius: 16px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 200, 255, 0.6);
-}
-
-.stat-card p {
-  font-size: 1rem;
-  margin-bottom: 5px;
-}
-
-.stat-card strong {
-  font-size: 1.3rem;
-  color: #00e5ff;
-}
-
-/* Galeria de desenhos */
-.galeria-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.galeria-item {
-  background: linear-gradient(135deg, #ff6ec7, #7873f5);
-  color: #fff;
-  font-weight: bold;
-  padding: 12px 18px;
-  border-radius: 14px;
-  box-shadow: 0 0 12px rgba(255, 110, 199, 0.6);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
-
-.galeria-item:hover {
-  transform: translateY(-5px) rotate(-2deg);
-  box-shadow: 0 0 20px rgba(120, 115, 245, 0.8);
-}
-
-/* ===== Game Interag ===== */
-.game-container {
-  margin: 40px auto;
-  padding: 30px;
-  max-width: 700px;
-  background: #fff;
-  border-radius: 16px;
-  border: 2px solid #e0e0e0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  animation: fadeInUp 0.8s ease;
-}
-
-.game-container h2 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.game-container p {
-  font-size: 1.1rem;
-  margin-bottom: 20px;
-  color: #555;
-}
-
-.game-btn {
-  padding: 15px 25px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.game-container.unlocked .game-btn {
-  background: linear-gradient(135deg, #36d1dc, #5b86e5);
-  color: #fff;
-}
-
-.game-container.unlocked .game-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-.game-container.locked .game-btn {
-  background: #ccc;
-  color: #666;
-  cursor: not-allowed;
-}
-.logo-img {
-  height: 60px;
-  margin-right: 5px;
-  border-radius: 0px; /* opcional */
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

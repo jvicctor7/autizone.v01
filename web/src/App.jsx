@@ -1,18 +1,28 @@
-import React, { useState } from "react";
-import LoginScreen from "./components/LoginScreen.jsx";
-import MainScreen from "./components/MainScreen.jsx";
+// src/App.jsx
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+// Agora tudo vem de ./components
+import Login from "./components/Login.jsx";
+import Register from "./components/Register.jsx";
+import MainScreen from "./components/MainScreen.jsx"; // sua tela de atividades
 
 export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [completedBlocks, setCompletedBlocks] = useState([]);
+  return (
+    <Router>
+      <Routes>
+        {/* redireciona a raiz para /login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-  return loggedIn ? (
-    <MainScreen 
-      logout={() => setLoggedIn(false)} 
-      completedBlocks={completedBlocks}
-      setCompletedBlocks={setCompletedBlocks}
-    />
-  ) : (
-    <LoginScreen login={() => setLoggedIn(true)} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* após login, navegue para /activities (MainScreen) */}
+        <Route path="/activities" element={<MainScreen />} />
+
+        {/* 404 simples */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 }
