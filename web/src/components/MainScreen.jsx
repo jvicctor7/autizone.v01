@@ -1,9 +1,12 @@
+// src/components/MainScreen.jsx
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./MainScreen.css";
 import GameModal from "./GameModal";
 import confetti from "canvas-confetti";
-import logo from "../assets/Autizone.png"; // Logo
+import logo from "../assets/Autizone.png";
 import arvLogo from "../assets/arv.png";
+import UserMenu from "./UserMenu";
 
 const niveis = {
   1: ["pai", "ovo", "mae", "maçã", "casa", "carro", "teto", "lua", "sol"],
@@ -12,6 +15,17 @@ const niveis = {
 };
 
 export default function MainScreen({ logout }) {
+  const navigate = useNavigate();
+
+  // ✅ Corrigido: agora o botão "Sair da conta" funciona de forma garantida
+  const handleLogout = async () => {
+    try {
+      if (logout) await logout(); // caso o logout venha do contexto
+    } finally {
+      navigate("/login"); // redireciona mesmo se der erro no logout
+    }
+  };
+
   const [nivelSelecionado, setNivelSelecionado] = useState(null);
   const [palavraAtual, setPalavraAtual] = useState(null);
   const [fase, setFase] = useState(0);
@@ -75,7 +89,6 @@ export default function MainScreen({ logout }) {
 
       const palavras = niveis[nivelSelecionado] || [];
       const todasFeitas = palavras.every((p) => p !== palavraAtual);
-
       if (todasFeitas && nivelSelecionado !== null) {
         setNivelCompleto({ ...nivelCompleto, [nivelSelecionado]: true });
         setNivelSelecionado(null);
@@ -97,98 +110,111 @@ export default function MainScreen({ logout }) {
   };
 
   const renderFase = () => {
-  if (!palavraAtual) return null;
+    if (!palavraAtual) return null;
 
-  const fonemas = palavraAtual.split("");
-  const silabas = palavraAtual.match(/.{1,2}/g) || [];
+    const fonemas = palavraAtual.split("");
+    const silabas = palavraAtual.match(/.{1,2}/g) || [];
 
-  let conteudo;
-  if (fase === 0) {
-    conteudo = (
-      <div className="word-phase">
-        <h3>🔤 Treinando Fonemas</h3>
-        <div className="sound-buttons">
-          {fonemas.map((f, i) => (
-            <button key={i} className="sound-btn" onClick={() => falar(f)}>
-              {f}
-            </button>
-          ))}
+    let conteudo;
+    if (fase === 0) {
+      conteudo = (
+        <div className="word-phase">
+          <h3>🔤 Treinando Fonemas</h3>
+          <div className="sound-buttons">
+            {fonemas.map((f, i) => (
+              <button key={i} className="sound-btn" onClick={() => falar(f)}>
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    } else if (fase === 1) {
+      conteudo = (
+        <div className="word-phase">
+          <h3>📝 Montando Sílabas</h3>
+          <div className="sound-buttons">
+            {silabas.map((s, i) => (
+              <button key={i} className="sound-btn" onClick={() => falar(s)}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    } else {
+      conteudo = (
+        <div className="word-phase">
+          <h3>✅ Palavra Completa</h3>
+          <button className="sound-btn highlight" onClick={() => falar(palavraAtual)}>
+            {palavraAtual}
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="fase-container">
+        {conteudo}
+        <div className="fase-controls">
+          <button className="nav-phase-btn back" onClick={voltar}>
+            ← Voltar
+          </button>
+          <button className="nav-phase-btn next" onClick={proximo}>
+            Próximo →
+          </button>
         </div>
       </div>
-    );
-  } else if (fase === 1) {
-    conteudo = (
-      <div className="word-phase">
-        <h3>📝 Montando Sílabas</h3>
-        <div className="sound-buttons">
-          {silabas.map((s, i) => (
-            <button key={i} className="sound-btn" onClick={() => falar(s)}>
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  } else {
-    conteudo = (
-      <div className="word-phase">
-        <h3>✅ Palavra Completa</h3>
-        <button className="sound-btn highlight" onClick={() => falar(palavraAtual)}>
-          {palavraAtual}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fase-container">
-      {conteudo}
-
-      <div className="fase-controls">
-        <button className="nav-phase-btn back" onClick={voltar}>
-          ← Voltar
-        </button>
-        <button className="nav-phase-btn next" onClick={proximo}>
-          Próximo →
-        </button>
-      </div>
-    </div>
-  );
-};
-
-  // ====== ArteZone ======
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    ctx.lineCap = "round";
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#333";
-    ctxRef.current = ctx;
-  }, []);
-
-  const startDrawing = (e) => {
-    setDrawing(true);
-    ctxRef.current.beginPath();
-    ctxRef.current.moveTo(
-      e.nativeEvent.offsetX || e.touches?.[0].clientX - canvasRef.current.offsetLeft,
-      e.nativeEvent.offsetY || e.touches?.[0].clientY - canvasRef.current.offsetTop
     );
   };
 
+  // ====== ArteZone ======
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#333";
+      ctxRef.current = ctx;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const startDrawing = (e) => {
+    if (!ctxRef.current || !canvasRef.current) return;
+    setDrawing(true);
+    ctxRef.current.beginPath();
+    const x =
+      e.nativeEvent?.offsetX ??
+      (e.touches?.[0].clientX - canvasRef.current.offsetLeft);
+    const y =
+      e.nativeEvent?.offsetY ??
+      (e.touches?.[0].clientY - canvasRef.current.offsetTop);
+    ctxRef.current.moveTo(x, y);
+  };
+
   const draw = (e) => {
-    if (!drawing) return;
-    const x = e.nativeEvent.offsetX || e.touches?.[0].clientX - canvasRef.current.offsetLeft;
-    const y = e.nativeEvent.offsetY || e.touches?.[0].clientY - canvasRef.current.offsetTop;
+    if (!drawing || !ctxRef.current || !canvasRef.current) return;
+    const x =
+      e.nativeEvent?.offsetX ??
+      (e.touches?.[0].clientX - canvasRef.current.offsetLeft);
+    const y =
+      e.nativeEvent?.offsetY ??
+      (e.touches?.[0].clientY - canvasRef.current.offsetTop);
     ctxRef.current.lineTo(x, y);
     ctxRef.current.stroke();
   };
 
   const stopDrawing = () => {
     setDrawing(false);
-    ctxRef.current.beginPath();
+    if (ctxRef.current) ctxRef.current.beginPath();
   };
 
   const clearCanvas = () => {
+    if (!ctxRef.current || !canvasRef.current) return;
     ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
   };
 
@@ -211,7 +237,8 @@ export default function MainScreen({ logout }) {
 
   const palavrasSurpresa = ["Sol", "Lua", "Cachorro", "Flor", "Peixe"];
   const desafioSurpresa = () => {
-    const randomWord = palavrasSurpresa[Math.floor(Math.random() * palavrasSurpresa.length)];
+    const randomWord =
+      palavrasSurpresa[Math.floor(Math.random() * palavrasSurpresa.length)];
     setArtePalavra(randomWord);
   };
 
@@ -229,7 +256,12 @@ export default function MainScreen({ logout }) {
           <img src={arvLogo} alt="Logo Arv" className="logo-img" />
           <h2 className="logo-text">AutiZone</h2>
         </div>
-        <button className="logout-btn" onClick={logout}>🚪 Sair</button>
+
+        {/* ✅ Mantido tudo, só troca a função de logout */}
+        <UserMenu
+          onOpenAccount={() => navigate("/account")}
+          onLogout={handleLogout}
+        />
       </nav>
 
       {/* Dashboard */}
@@ -238,42 +270,47 @@ export default function MainScreen({ logout }) {
         <p>Total de XP: <strong>{xp}</strong></p>
         <p>💰 Moedas: {moedas}</p>
         <div className="xp-bar-container">
-          <div className="xp-bar" style={{ width: `${Math.min((xp / 30) * 100, 100)}%` }}></div>
+          <div
+            className="xp-bar"
+            style={{ width: `${Math.min((xp / 30) * 100, 100)}%` }}
+          ></div>
         </div>
         <p>{xp < 30 ? `Faltam ${30 - xp} XP para desbloquear o jogo` : "🎉 Jogo desbloqueado!"}</p>
       </div>
 
-     <div className="levels-grid">
-  {[1, 2, 3].map((n) => (
-    <div
-      key={n}
-      className={`level-card ${nivelCompleto[n] ? "completed" : ""} ${nivelSelecionado === n ? "selected" : ""}`}
-    >
-      <h3>🏆 Nível {n}</h3>
+      <div className="levels-grid">
+        {[1, 2, 3].map((n) => (
+          <div
+            key={n}
+            className={`level-card ${nivelCompleto[n] ? "completed" : ""} ${nivelSelecionado === n ? "selected" : ""}`}
+          >
+            <h3>🏆 Nível {n}</h3>
 
-      {nivelSelecionado === n && <span className="tag-atual">Nível atual</span>}
+            {nivelSelecionado === n && <span className="tag-atual">Nível atual</span>}
 
-      {!nivelSelecionado && (
-        <button className="select-btn" onClick={() => iniciarNivel(n)}>
-          Iniciar Nível
-        </button>
-      )}
+            {!nivelSelecionado && (
+              <button className="select-btn" onClick={() => iniciarNivel(n)}>
+                Iniciar Nível
+              </button>
+            )}
 
-      {nivelSelecionado === n && !palavraAtual && (
-        <div className="word-selection">
-          {niveis[n].map((p, i) => (
-            <button key={i} className="word-btn" onClick={() => escolherPalavra(p)}>
-              {p}
-            </button>
-          ))}
-          <button className="cancel-btn" onClick={() => setNivelSelecionado(null)}>❌ Voltar</button>
-        </div>
-      )}
+            {nivelSelecionado === n && !palavraAtual && (
+              <div className="word-selection">
+                {niveis[n].map((p, i) => (
+                  <button key={i} className="word-btn" onClick={() => escolherPalavra(p)}>
+                    {p}
+                  </button>
+                ))}
+                <button className="cancel-btn" onClick={() => setNivelSelecionado(null)}>
+                  ❌ Voltar
+                </button>
+              </div>
+            )}
 
-      {nivelCompleto[n] && <span className="done-tag">✔ Concluído!</span>}
-    </div>
-  ))}
-</div>
+            {nivelCompleto[n] && <span className="done-tag">✔ Concluído!</span>}
+          </div>
+        ))}
+      </div>
 
       {renderFase()}
 
@@ -294,7 +331,6 @@ export default function MainScreen({ logout }) {
         </button>
       </div>
 
-      {/* Modal do Jogo */}
       <GameModal isOpen={modalAberto} onClose={() => setModalAberto(false)} />
 
       {/* ===== ArteZone ===== */}
