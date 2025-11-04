@@ -1,10 +1,13 @@
 // web/src/services/api.js
 
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3333/api";
+// endereço base da API
+export const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3333/api";
 
+// pega o token salvo
 const getToken = () => localStorage.getItem("token");
 
-// Função base HTTP
+// função base HTTP
 export async function api(path, { method = "GET", body, token } = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     method,
@@ -45,14 +48,14 @@ export const authApi = {
     localStorage.removeItem("user");
   },
 
-  // Obter perfil atual
+  // Obter usuário logado
   me: () =>
     api("/users/me", {
       method: "GET",
       token: getToken(),
     }),
 
-  // Atualizar nome e e-mail
+  // Atualizar nome/e-mail
   updateProfile: ({ name, email }) =>
     api("/users/me", {
       method: "PUT",
@@ -60,22 +63,16 @@ export const authApi = {
       token: getToken(),
     }),
 
-  // Alterar senha (corrigido para aceitar o formato esperado pelo backend)
-  changePassword: ({ currentPassword, password, newPassword }) => {
-    // alguns backends esperam 'password' em vez de 'currentPassword'
-    const body = {
-      password: password ?? currentPassword, // mapeia automaticamente
-      newPassword,
-    };
-    return api("/users/me/password", {
+  // Alterar senha -> BACK espera { currentPassword, newPassword }
+  changePassword: ({ currentPassword, newPassword }) =>
+    api("/users/me/password", {
       method: "PUT",
-      body,
+      body: { currentPassword, newPassword },
       token: getToken(),
-    });
-  },
+    }),
 };
 
-// (Opcional) manter userApi para compatibilidade
+// ============ USER (compat) ============
 export const userApi = {
   getMe: () =>
     api("/users/me", {
@@ -90,15 +87,39 @@ export const userApi = {
       token: getToken(),
     }),
 
-  changePassword: ({ currentPassword, password, newPassword }) => {
-    const body = {
-      password: password ?? currentPassword,
-      newPassword,
-    };
-    return api("/users/me/password", {
+  changePassword: ({ currentPassword, newPassword }) =>
+    api("/users/me/password", {
       method: "PUT",
-      body,
+      body: { currentPassword, newPassword },
       token: getToken(),
-    });
-  },
+    }),
+};
+
+// ============ ACTIVITIES / PROGRESS ============
+export const activitiesApi = {
+  // manda para o back: "o usuário fez a palavra X do nível Y"
+  trackWord: ({ level, word, correct = true }) =>
+    api("/activities/track-word", {
+      method: "POST",
+      body: { level, word, correct },
+      token: getToken(),
+    }),
+};
+
+// para buscar o que está salvo no banco
+export const progressApi = {
+  getMyProgress: () =>
+    api("/progress/me", {
+      method: "GET",
+      token: getToken(),
+    }),
+};
+
+// ============ WORDS (dinâmicas) ============
+export const wordsApi = {
+  getByLevel: (level) =>
+    api(`/words?level=${level}`, {
+      method: "GET",
+      token: getToken(),
+    }),
 };

@@ -1,6 +1,8 @@
 // src/components/MainScreen.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { activitiesApi } from "../services/api";
+import { wordsApi, progressApi } from "../services/api";
 import "./MainScreen.css";
 import GameModal from "./GameModal";
 import confetti from "canvas-confetti";
@@ -8,7 +10,8 @@ import logo from "../assets/Autizone.png";
 import arvLogo from "../assets/arv.png";
 import UserMenu from "./UserMenu";
 
-const niveis = {
+// lista inicial (fallback)
+const NIVEIS_INICIAIS = {
   1: ["pai", "ovo", "mae", "maçã", "casa", "carro", "teto", "lua", "sol"],
   2: ["cachorro", "futebol", "mesa", "lápis", "caneta"],
   3: ["avião", "zebra", "casamento", "bicicleta"],
@@ -16,8 +19,13 @@ const niveis = {
 
 export default function MainScreen({ logout }) {
   const navigate = useNavigate();
+  const [niveis, setNiveis] = useState(NIVEIS_INICIAIS);
 
-  // ✅ Corrigido: agora o botão "Sair da conta" funciona de forma garantida
+  // 👉 estados só pra recarregar palavras
+  const [loadingNivel, setLoadingNivel] = useState({}); // {1: true, 2: false...}
+  const [msgNivel, setMsgNivel] = useState({}); // {1: "Gerando...", 2: "Erro"...}
+
+  // correçao botao sair
   const handleLogout = async () => {
     try {
       if (logout) await logout(); // caso o logout venha do contexto
@@ -60,6 +68,19 @@ export default function MainScreen({ logout }) {
     setDesafioDiario(desafios[dia % desafios.length]);
   }, []);
 
+  // pegar XP salvo no back
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await progressApi.getMyProgress();
+        const xpServidor = data?.progress?.xp ?? 0;
+        setXp(xpServidor);
+      } catch (err) {
+        console.warn("Não deu pra carregar XP do servidor:", err.message);
+      }
+    })();
+  }, []);
+
   // ====== Voz ======
   const falar = (texto) => {
     const utterance = new SpeechSynthesisUtterance(texto);
@@ -79,25 +100,97 @@ export default function MainScreen({ logout }) {
     setFase(0);
   };
 
-  const proximo = () => {
+  // ====== NOVAS PALAVRAS (com loading e mensagem) ======
+  const recarregarNivel = async (nivel) => {
+    // liga o loading desse nível
+    setLoadingNivel((prev) => ({ ...prev, [nivel]: true }));
+    setMsgNivel((prev) => ({ ...prev, [nivel]: "Gerando novas palavras..." }));
+
+    try {
+      const res = await fetch(`http://localhost:3333/api/words?level=${nivel}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+
+      console.log("✨ Novas palavras recebidas:", data);
+
+      if (data?.words?.length) {
+        // atualiza lista
+        setNiveis((prev) => ({
+          ...prev,
+          [nivel]: data.words,
+        }));
+        // mensagem de sucesso
+        setMsgNivel((prev) => ({
+          ...prev,
+          [nivel]: "✅ Novas palavras geradas!",
+        }));
+        
+        setTimeout(() => {
+          setMsgNivel ((prev) => ({ ...prev, [nivel]: "" }));
+        }, 4000);
+      } else {
+        // fallback: não veio nada
+        setMsgNivel((prev) => ({
+          ...prev,
+          [nivel]: "⚠️ Não vieram palavras novas. Tente de novo.",
+        }));
+        console.warn("⚠️ Nenhuma palavra recebida do servidor. Usando fallback.");
+      }
+    } catch (err) {
+      console.error("Erro ao recarregar palavras:", err);
+      setMsgNivel((prev) => ({
+        ...prev,
+        [nivel]: "❌ Erro ao gerar palavras.",
+      }));
+    } finally {
+      // desliga loading
+      setLoadingNivel((prev) => ({ ...prev, [nivel]: false }));
+    }
+  };
+
+  const proximo = async () => {
+    // ainda está nas fases 0 e 1 -> só avança
     if (fase < 2) {
       setFase(fase + 1);
-    } else {
-      const novoXp = xp + 10;
-      setXp(novoXp);
-      setPalavraAtual(null);
+      return;
+    }
 
-      const palavras = niveis[nivelSelecionado] || [];
-      const todasFeitas = palavras.every((p) => p !== palavraAtual);
-      if (todasFeitas && nivelSelecionado !== null) {
-        setNivelCompleto({ ...nivelCompleto, [nivelSelecionado]: true });
-        setNivelSelecionado(null);
-      }
+    // chegou aqui = terminou a palavra atual
+    if (nivelSelecionado && palavraAtual) {
+      console.log("📤 enviando pro backend:", {
+        level: nivelSelecionado,
+        word: palavraAtual,
+      });
 
-      if (novoXp >= 30) {
-        setJogoDesbloqueado(true);
-        confetti();
+      try {
+        await activitiesApi.trackWord({
+          level: nivelSelecionado,
+          word: palavraAtual,
+          correct: true,
+        });
+        console.log("✅ backend respondeu ok");
+      } catch (err) {
+        console.error("❌ Erro ao salvar progresso da palavra:", err);
+        // mesmo com erro, o jogo continua
       }
+    }
+
+    // ---- resto igual ao seu ----
+    const novoXp = xp + 10;
+    setXp(novoXp);
+    setPalavraAtual(null);
+
+    const palavras = niveis[nivelSelecionado] || [];
+    const todasFeitas = palavras.every((p) => p !== palavraAtual);
+    if (todasFeitas && nivelSelecionado !== null) {
+      setNivelCompleto({ ...nivelCompleto, [nivelSelecionado]: true });
+      setNivelSelecionado(null);
+    }
+
+    if (novoXp >= 30) {
+      setJogoDesbloqueado(true);
+      confetti();
     }
   };
 
@@ -257,7 +350,6 @@ export default function MainScreen({ logout }) {
           <h2 className="logo-text">AutiZone</h2>
         </div>
 
-        {/* ✅ Mantido tudo, só troca a função de logout */}
         <UserMenu
           onOpenAccount={() => navigate("/account")}
           onLogout={handleLogout}
@@ -282,26 +374,66 @@ export default function MainScreen({ logout }) {
         {[1, 2, 3].map((n) => (
           <div
             key={n}
-            className={`level-card ${nivelCompleto[n] ? "completed" : ""} ${nivelSelecionado === n ? "selected" : ""}`}
+            className={`level-card ${nivelCompleto[n] ? "completed" : ""} ${
+              nivelSelecionado === n ? "selected" : ""
+            }`}
           >
             <h3>🏆 Nível {n}</h3>
 
-            {nivelSelecionado === n && <span className="tag-atual">Nível atual</span>}
-
-            {!nivelSelecionado && (
-              <button className="select-btn" onClick={() => iniciarNivel(n)}>
-                Iniciar Nível
-              </button>
+            {nivelSelecionado === n && (
+              <span className="tag-atual">Nível atual</span>
             )}
 
+            {/* --- Botões principais --- */}
+            {!nivelSelecionado && (
+              <div className="level-actions">
+                <button className="select-btn" onClick={() => iniciarNivel(n)}>
+                  Iniciar Nível
+                </button>
+
+                {/* 🔁 Botão para gerar novas palavras */}
+                <button
+                  className="refresh-btn"
+                  onClick={() => recarregarNivel(n)}
+                  title="Gerar novas palavras com IA"
+                  disabled={!!loadingNivel[n]}
+                >
+                  {loadingNivel[n] ? "⏳ Gerando..." : "🔁 Novas palavras"}
+                </button>
+              </div>
+            )}
+
+            {/* mensagenzinha de resultado da geração */}
+            {!nivelSelecionado && msgNivel[n] && (
+              <p
+                style={{
+                  marginTop: "8px",
+                  fontSize: "0.8rem",
+                  color: "#4b1480",
+                  fontWeight: 600,
+                }}
+              >
+                {msgNivel[n]}
+              </p>
+            )}
+
+            {/* --- Quando o nível está selecionado --- */}
             {nivelSelecionado === n && !palavraAtual && (
               <div className="word-selection">
                 {niveis[n].map((p, i) => (
-                  <button key={i} className="word-btn" onClick={() => escolherPalavra(p)}>
+                  <button
+                    key={i}
+                    className="word-btn"
+                    onClick={() => escolherPalavra(p)}
+                  >
                     {p}
                   </button>
                 ))}
-                <button className="cancel-btn" onClick={() => setNivelSelecionado(null)}>
+
+                <button
+                  className="cancel-btn"
+                  onClick={() => setNivelSelecionado(null)}
+                >
                   ❌ Voltar
                 </button>
               </div>
@@ -315,7 +447,11 @@ export default function MainScreen({ logout }) {
       {renderFase()}
 
       {/* ===== Game Interag ===== */}
-      <div className={`game-container ${jogoDesbloqueado ? "unlocked" : "locked"}`}>
+      <div
+        className={`game-container ${
+          jogoDesbloqueado ? "unlocked" : "locked"
+        }`}
+      >
         <h2>🌈 Game Interag</h2>
         <p>
           {jogoDesbloqueado
@@ -341,12 +477,24 @@ export default function MainScreen({ logout }) {
 
         <div className="words-choice">
           {["Maçã", "Sol", "Casa", "Peixe", "Flor"].map((w) => (
-            <button key={w} className="arte-btn" onClick={() => setArtePalavra(w)}>{w}</button>
+            <button
+              key={w}
+              className="arte-btn"
+              onClick={() => setArtePalavra(w)}
+            >
+              {w}
+            </button>
           ))}
-          <button className="surpresa-btn" onClick={desafioSurpresa}>🎲 Surpresa!</button>
+          <button className="surpresa-btn" onClick={desafioSurpresa}>
+            🎲 Surpresa!
+          </button>
         </div>
 
-        {artePalavra && <p>🖌 Você vai desenhar: <strong>{artePalavra}</strong></p>}
+        {artePalavra && (
+          <p>
+            🖌 Você vai desenhar: <strong>{artePalavra}</strong>
+          </p>
+        )}
 
         <canvas
           ref={canvasRef}
@@ -362,8 +510,12 @@ export default function MainScreen({ logout }) {
         ></canvas>
 
         <div className="artezone-actions">
-          <button className="artezone-btn" onClick={clearCanvas}>🧽 Limpar</button>
-          <button className="artezone-btn" onClick={submitDrawing}>✅ Entregar</button>
+          <button className="artezone-btn" onClick={clearCanvas}>
+            🧽 Limpar
+          </button>
+          <button className="artezone-btn" onClick={submitDrawing}>
+            ✅ Entregar
+          </button>
         </div>
 
         {showFeedback && (
@@ -394,7 +546,9 @@ export default function MainScreen({ logout }) {
             <p>Nenhum desenho ainda... desenhe para encher sua galeria! 🎨</p>
           ) : (
             adesivos.map((a, i) => (
-              <span key={i} className="galeria-item">{a}</span>
+              <span key={i} className="galeria-item">
+                {a}
+              </span>
             ))
           )}
         </div>

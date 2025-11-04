@@ -11,43 +11,22 @@
   overflow-x: hidden;
   overflow-y: auto;
   font-family: "Comic Neue", "Arial Rounded MT Bold", sans-serif;
-  background: linear-gradient(135deg, #672b9b 0%, #583286 50%, #9c78c2 100%);
+  /* 🔥 fundo igual ao do login */
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.6) 2px, transparent 2.4px),
+    linear-gradient(135deg, #2f0d5e, #4b1480, #2f0d5e);
+  background-size: 36px 36px, auto;
+  background-position: 0 0, center;
+  animation: dotsMove 2s linear infinite;
   position: relative;
 }
 
-/* ================================
-   Fundo com Logo "Gota d'Água"
-================================= */
-.main-container .body-bg-logo {
-  position: fixed;
-  bottom: -50px;
-  right: -50px;
-  width: 400px;
-  height: auto;
-  opacity: 0.1;
-  z-index: 0;
-  pointer-events: none;
-  transform: rotate(-20deg);
+@keyframes dotsMove {
+  from { background-position: 0 0, center; }
+  to { background-position: 36px 36px, center; }
 }
 
-/* ================================
-   Fundo Animado
-================================= */
-.main-container::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(white 2px, transparent 2px);
-  background-size: 40px 40px;
-  animation: twinkle 4s infinite linear;
-  opacity: 0.4;
-  pointer-events: none;
-  z-index: 0;
-}
-@keyframes twinkle {
-  from { background-position: 0 0; }
-  to { background-position: 40px 40px; }
-}
+/* deixa só o logo fantasma no fundo, sem duplicar bolinhas */
 .main-container::after {
   content: "";
   position: fixed;
@@ -172,7 +151,7 @@
   padding: 20px;
   border-radius: 20px;
   border: 3px solid #ff8c00;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2), 0 0 12px rgba(255, 215, 0, 0.6);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.25);
   text-align: center;
   width: 260px;
   transition: transform 0.3s ease;
@@ -183,23 +162,45 @@
   font-size: 1.3rem;
   color: #444;
 }
-.select-btn, .word-btn, .cancel-btn {
+
+/* botões principais laranja */
+.select-btn,
+.word-btn {
   display: block;
   margin: 10px auto;
   padding: 14px 20px;
   border: none;
   border-radius: 15px;
-  background: linear-gradient(135deg, #6a5acd, #836fff);
+  background: linear-gradient(135deg, #ff8c42, #ff6a00);
   color: white;
   cursor: pointer;
   font-size: 1.1rem;
   font-weight: bold;
   transition: all 0.2s ease;
 }
-.select-btn:hover, .word-btn:hover, .cancel-btn:hover {
+.select-btn:hover,
+.word-btn:hover {
   transform: scale(1.1) translateY(-3px);
-  background: linear-gradient(135deg, #836fff, #6a5acd);
+  background: linear-gradient(135deg, #ff6a00, #ff8c42);
 }
+
+/* ROXO: botão voltar da lista + botão "novas palavras" */
+.cancel-btn,
+.refresh-btn {
+  background: linear-gradient(135deg, #6a5acd, #836fff);
+  color: #fff;
+  border: none;
+  border-radius: 15px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.cancel-btn:hover,
+.refresh-btn:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
 .done-tag {
   display: inline-block;
   margin-top: 10px;
@@ -236,15 +237,48 @@
 
 /* ================================
    Fases do jogo
+   (letras e título no mesmo estilo dos botões de navegação)
 ================================= */
-.word-phase { margin: 25px 0; text-align: center; }
-.sound-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.sound-btn {
-  padding: 14px 24px; border: none; border-radius: 18px;
-  background: #ffcc00; font-weight: bold; cursor: pointer; font-size: 1.1rem;
-  transition: all 0.2s ease;
+.word-phase {
+  margin: 25px 0;
+  text-align: center;
 }
-.sound-btn:hover { background: #ffdb4d; transform: scale(1.1); }
+.word-phase h3 {
+  display: inline-block;
+  background: #ffffff;
+  color: #7a3d00;
+  border: 3px solid #ff8c00;
+  border-radius: 16px;
+  padding: 10px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12),
+              0 0 10px rgba(255, 215, 0, 0.35);
+  font-weight: 700;
+}
+.sound-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.sound-btn {
+  padding: 14px 24px;
+  border: 3px solid #ff8c00;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #7a3d00;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.12),
+              0 0 10px rgba(255, 215, 0, 0.35);
+}
+.sound-btn:hover {
+  background: linear-gradient(135deg, #FB8C00, #F4511E);
+  color: #fff;
+  transform: scale(1.05);
+}
 
 /* ================================
    Botões Voltar/Próximo (estilo card)
@@ -385,6 +419,7 @@
 }
 
 /* ===== Avatar e menu do usuário (navbar) ===== */
+/* (mantido igual ao seu) */
 .nav-right {
   position: relative;
   display: flex;
@@ -446,7 +481,7 @@
 
 /* ===== User Menu (avatar no topo direito) ===== */
 .user-menu {
-  margin-left: auto; /* empurra para a direita dentro da navbar */
+  margin-left: auto;
   position: relative;
   z-index: 1001;
 }
@@ -468,10 +503,9 @@
 .avatar-btn:hover { transform: scale(1.05); }
 .avatar-btn:active { transform: scale(0.98); }
 
-/* Pop-up */
 .user-menu-pop {
   position: absolute;
-  top: 52px; /* abaixo do avatar */
+  top: 52px;
   right: 0;
   width: 220px;
   background: #fff;
@@ -496,3 +530,9 @@
 .user-menu-item:hover { background: rgba(0,0,0,.05); }
 .user-menu-item.danger { color: #c62828; }
 .user-menu-item.danger:hover { background: rgba(198,40,40,.08); }
+
+/* deixar o botão da fase "Palavra Completa" embaixo do título */
+.word-phase .sound-btn.highlight {
+  display: block;
+  margin: 10px auto 0;
+}
