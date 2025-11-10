@@ -17,6 +17,29 @@ const NIVEIS_INICIAIS = {
   3: ["avião", "zebra", "casamento", "bicicleta"],
 };
 
+// quanto cada palavra dá, por nível
+const XP_BY_WORD = {
+  1: 8,
+  2: 12,
+  3: 16,
+};
+
+// faixas de XP -> nível do aluno
+const XP_LEVEL_STEPS = [0, 60, 140, 240, 360, 500, 680];
+
+function calcPlayerLevel(totalXp) {
+  // percorre até achar a maior faixa que o XP alcançou
+  let level = 1;
+  for (let i = 0; i < XP_LEVEL_STEPS.length; i++) {
+    if (totalXp >= XP_LEVEL_STEPS[i]) {
+      level = i + 1; // porque array começa em 0
+    } else {
+      break;
+    }
+  }
+  return level;
+}
+
 export default function MainScreen({ logout }) {
   const navigate = useNavigate();
   const [niveis, setNiveis] = useState(NIVEIS_INICIAIS);
@@ -41,6 +64,7 @@ export default function MainScreen({ logout }) {
   const [jogoDesbloqueado, setJogoDesbloqueado] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [xp, setXp] = useState(0);
+  const [playerLevel, setPlayerLevel] = useState(1);
 
   // ---- ArteZone ----
   const [artePalavra, setArtePalavra] = useState(null);
@@ -75,6 +99,7 @@ export default function MainScreen({ logout }) {
         const data = await progressApi.getMyProgress();
         const xpServidor = data?.progress?.xp ?? 0;
         setXp(xpServidor);
+        setPlayerLevel(calcPlayerLevel(xpServidor));
       } catch (err) {
         console.warn("Não deu pra carregar XP do servidor:", err.message);
       }
@@ -125,7 +150,7 @@ export default function MainScreen({ logout }) {
           ...prev,
           [nivel]: "✅ Novas palavras geradas!",
         }));
-        
+       
         setTimeout(() => {
           setMsgNivel ((prev) => ({ ...prev, [nivel]: "" }));
         }, 4000);
@@ -150,49 +175,60 @@ export default function MainScreen({ logout }) {
   };
 
   const proximo = async () => {
-    // ainda está nas fases 0 e 1 -> só avança
-    if (fase < 2) {
-      setFase(fase + 1);
-      return;
-    }
+  // Se ainda está nas fases 0 ou 1, apenas avança
+  if (fase < 2) {
+    setFase((prev) => prev + 1);
+    return;
+  }
 
-    // chegou aqui = terminou a palavra atual
-    if (nivelSelecionado && palavraAtual) {
-      console.log("📤 enviando pro backend:", {
-        level: nivelSelecionado,
-        word: palavraAtual,
+  // Calcula XP do nível atual
+  const ganho = XP_BY_WORD[nivelSelecionado] ?? 8;
+
+  try {
+    // Envia tentativa para o backend
+    const res = await activitiesApi.trackWord({
+      level: nivelSelecionado,
+      word: palavraAtual,
+      correct: true,
+      xpGain: ganho,
+    });
+
+    // Atualiza XP com o valor do servidor (ou local se der erro)
+    if (res && typeof res.xp === "number") {
+      setXp(res.xp);
+      setPlayerLevel(calcPlayerLevel(res.xp));
+      console.log(`✅ XP atualizado pelo backend: ${res.xp}`);
+    } else {
+      setXp((prev) => {
+        const novo = prev + ganho;
+        setPlayerLevel(calcPlayerLevel(novo));
+        return novo;
       });
-
-      try {
-        await activitiesApi.trackWord({
-          level: nivelSelecionado,
-          word: palavraAtual,
-          correct: true,
-        });
-        console.log("✅ backend respondeu ok");
-      } catch (err) {
-        console.error("❌ Erro ao salvar progresso da palavra:", err);
-        // mesmo com erro, o jogo continua
-      }
     }
-
-    // ---- resto igual ao seu ----
-    const novoXp = xp + 10;
-    setXp(novoXp);
+  } catch (err) {
+    console.error("❌ Erro ao salvar progresso da palavra:", err);
+    // Atualiza localmente caso o backend falhe
+    setXp((prev) => {
+      const novo = prev + ganho;
+      setPlayerLevel(calcPlayerLevel(novo));
+      return novo;
+    });
+  } finally {
+    // Reseta palavra atual (volta para lista)
     setPalavraAtual(null);
 
     const palavras = niveis[nivelSelecionado] || [];
     const todasFeitas = palavras.every((p) => p !== palavraAtual);
     if (todasFeitas && nivelSelecionado !== null) {
-      setNivelCompleto({ ...nivelCompleto, [nivelSelecionado]: true });
+      setNivelCompleto((prev) => ({ ...prev, [nivelSelecionado]: true }));
       setNivelSelecionado(null);
     }
 
-    if (novoXp >= 30) {
-      setJogoDesbloqueado(true);
-      confetti();
-    }
-  };
+    // Desbloqueia jogo se XP total ≥ 30
+    setJogoDesbloqueado((prev) => prev || xp + ganho >= 30);
+  }
+};
+
 
   const voltar = () => {
     if (fase > 0) {
@@ -359,8 +395,8 @@ export default function MainScreen({ logout }) {
       {/* Dashboard */}
       <div className="xp-dashboard-block">
         <h3>🎮 Seu Progresso</h3>
+        <p>Nível atual: <strong>{playerLevel}</strong></p>
         <p>Total de XP: <strong>{xp}</strong></p>
-        <p>💰 Moedas: {moedas}</p>
         <div className="xp-bar-container">
           <div
             className="xp-bar"

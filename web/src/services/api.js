@@ -98,10 +98,10 @@ export const userApi = {
 // ============ ACTIVITIES / PROGRESS ============
 export const activitiesApi = {
   // manda para o back: "o usuário fez a palavra X do nível Y"
-  trackWord: ({ level, word, correct = true }) =>
+  trackWord: ({ level, word, correct = true, xpGain  }) =>
     api("/activities/track-word", {
       method: "POST",
-      body: { level, word, correct },
+      body: { level, word, correct, xpGain },
       token: getToken(),
     }),
 };
