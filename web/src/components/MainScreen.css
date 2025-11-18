@@ -536,3 +536,812 @@
   display: block;
   margin: 10px auto 0;
 }
+
+/* ===== Mensagem temporária abaixo dos botões de nível ===== */
+.msg-nivel {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(75, 20, 128, 0.25);
+}
+
+/* ===== destaque do botão "palavra completa" (quando mostra a palavra inteira) ===== */
+.sound-btn.highlight {
+  background: linear-gradient(135deg, #ff8c42, #ff6a00);
+  color: #fff;
+  border: none;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+  transform: translateY(0);
+}
+
+/* ===== loader simples para o botão de novas palavras (se quiser adicionar um ícone) ===== */
+.refresh-btn[disabled] {
+  opacity: 0.85;
+  cursor: default;
+  filter: grayscale(15%);
+}
+
+/* ===== pequenas correções de responsividade para evitar empilhamento estranho ===== */
+@media (max-width: 480px) {
+  .sound-buttons { gap: 8px; }
+  .sound-btn { padding: 10px 16px; font-size: 1rem; }
+  .xp-dashboard-block { padding: 16px; margin: 90px 12px 20px; }
+  .levels-grid { gap: 12px; padding: 0 10px; }
+}
+
+/* ===== Botão ver palavras geradas / histórico ===== */
+.history-btn {
+  background: linear-gradient(135deg, #7b61ff, #6a9dfb);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 700;
+  margin-left: 8px;
+  cursor: pointer;
+}
+.history-btn:hover { transform: scale(1.03); opacity: 0.95; }
+
+/* palavra marcada como concluída (verde) */
+.word-btn.done {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32) !important;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(46,125,50,0.25);
+}
+
+/* modal simples de saved words */
+.saved-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+}
+.saved-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+.saved-modal h3 { margin: 0 0 10px 0; }
+.saved-list ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.small-word-btn {
+  background: linear-gradient(135deg, #f0f0f0, #fff);
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ajuste: reduzir o destaque do check e alinhar */
+.word-selection div { align-items: center; }
+
+/* ===========================
+   FIX: modal palavras geradas
+   =========================== */
+
+/* backdrop já existente: fix para garantir centralização */
+.saved-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 1100;
+  overflow: hidden; /* importante: impede que o body scroll passe por trás */
+}
+
+/* modal principal: limitar altura total da caixa */
+.saved-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px;
+  width: min(520px, 92%);
+  /* Limite absoluto para não deixar estourar a tela */
+  max-height: 80vh;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* garante que conteúdo interno possa rolar */
+  overflow: hidden;
+}
+
+/* CONTEÚDO ROLÁVEL — a lista dentro do modal */
+.saved-list-scroll {
+  /* limita apenas a área da lista (deixa titulo/botões fixos dentro do modal) */
+  max-height: calc(80vh - 140px); /* 140px é a margem para título/footers; ajuste se necessário */
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* garantir que a UL não faça o modal crescer */
+.saved-list-scroll ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* botões menores ocupando largura e não expandindo o modal */
+.small-word-btn {
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Scrollbar cosmetico (opcional) */
+.saved-list-scroll::-webkit-scrollbar { width: 10px; }
+.saved-list-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+
+/* Ao abrir modal, travar scroll do body (remover quando fechar) */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* responsividade */
+@media (max-width: 720px) {
+  .saved-modal { max-height: 86vh; }
+  .saved-list-scroll { max-height: calc(86vh - 140px); }
+}
+
+/* ===== NOVA SEÇÃO DE JOGOS ===== */
+.games-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.games-section h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Grid de Progresso */
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.progress-item {
+  background: rgba(255,255,255,0.1);
+  padding: 0.8rem;
+  border-radius: 10px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.progress-item span {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.progress-item strong {
+  font-size: 1.4rem;
+  color: #FFD93D;
+}
+
+/* Grid de Jogos */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.game-card {
+  background: rgba(255,255,255,0.95);
+  padding: 1.5rem;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.game-card.unlocked {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.game-card.unlocked:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+.game-card.locked {
+  opacity: 0.7;
+  background: rgba(255,255,255,0.8);
+}
+
+.game-card.next-unlock {
+  animation: pulse 2s infinite;
+  border: 2px solid #FFD93D;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.game-card h3 {
+  color: #2C3E50;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.game-card p {
+  color: #7F8C8D;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  min-height: 40px;
+}
+
+.game-info {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.level-badge, .xp-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.level-badge {
+  background: #3498DB;
+  color: white;
+}
+
+.xp-badge {
+  background: #27AE60;
+  color: white;
+}
+
+.game-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.game-btn:not(:disabled) {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.game-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+}
+
+.game-btn:disabled {
+  background: #BDC3C7;
+  color: #7F8C8D;
+  cursor: not-allowed;
+}
+
+.next-unlock-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #FFD93D;
+  color: #2C3E50;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 5px #FFD93D; }
+  to { box-shadow: 0 0 15px #FFD93D; }
+}
+
+.next-level-info {
+  text-align: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.next-level-info p {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+ 
+  .progress-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+ 
+  .games-section {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+ 
+  .game-card {
+    padding: 1rem;
+  }
+}
+
+/* ===== NOVA SEÇÃO DE JOGOS CORRIGIDA ===== */
+.games-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.games-section h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Dashboard Simples dos Jogos */
+.games-dashboard {
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.games-dashboard p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.games-dashboard strong {
+  color: #FFD93D;
+}
+
+/* Grid de Jogos */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.game-card {
+  background: rgba(255,255,255,0.95);
+  padding: 1.5rem;
+  border-radius: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.game-card.unlocked {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.game-card.unlocked:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+.game-card.locked {
+  opacity: 0.6;
+  background: rgba(255,255,255,0.8);
+  filter: grayscale(0.3);
+}
+
+.game-card.next-unlock {
+  animation: pulse 2s infinite;
+  border: 2px solid #FFD93D;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.game-card h3 {
+  color: #2C3E50;
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.game-card p {
+  color: #7F8C8D;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  min-height: 40px;
+  line-height: 1.4;
+}
+
+.game-info {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.level-badge, .xp-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.level-badge {
+  background: #3498DB;
+  color: white;
+}
+
+.xp-badge {
+  background: #27AE60;
+  color: white;
+}
+
+.game-btn {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.game-btn:not(:disabled) {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.game-btn:not(:disabled):hover {
+  background: linear-gradient(135deg, #764ba2, #667eea);
+  transform: translateY(-2px);
+}
+
+.game-btn:disabled {
+  background: #BDC3C7;
+  color: #7F8C8D;
+  cursor: not-allowed;
+}
+
+.next-unlock-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #FFD93D;
+  color: #2C3E50;
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  animation: glow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px #FFD93D;
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 0 15px #FFD93D;
+    transform: scale(1.05);
+  }
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+ 
+  .games-section {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+ 
+  .game-card {
+    padding: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-card {
+    padding: 1rem;
+  }
+ 
+  .games-section h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Estilos para feedback nos jogos */
+.game-feedback {
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px 0;
+  text-align: center;
+  font-weight: bold;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-feedback.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.game-feedback.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Estilos para canvas de desenho */
+.drawing-canvas {
+  border: 2px solid #333;
+  border-radius: 10px;
+  background: white;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.drawing-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.drawing-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.drawing-btn:hover {
+  transform: translateY(-2px);
+}
+
+.drawing-btn.clear {
+  background: #e74c3c;
+  color: white;
+}
+
+.drawing-btn.challenge {
+  background: #3498db;
+  color: white;
+}
+
+.drawing-btn.submit {
+  background: #27ae60;
+  color: white;
+}
+
+/* Estilos para inputs de jogos */
+.game-input {
+  padding: 12px;
+  font-size: 1.2rem;
+  width: 100%;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  text-align: center;
+  transition: border-color 0.3s ease;
+}
+
+.game-input:focus {
+  outline: none;
+  border-color: #2980b9;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Animações para transições suaves */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.game-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.game-card:nth-child(1) { animation-delay: 0.1s; }
+.game-card:nth-child(2) { animation-delay: 0.2s; }
+.game-card:nth-child(3) { animation-delay: 0.3s; }
+.game-card:nth-child(4) { animation-delay: 0.4s; }
+.game-card:nth-child(5) { animation-delay: 0.5s; }
+.game-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* === Forçar pílulas laranja consistentes (colar no final do MainScreen.css) === */
+
+/* garante que .word-btn tenha exatamente o mesmo visual das pílulas de nível */
+.word-btn {
+  /* mantém display/block como você já tem — só reforçamos o visual */
+  background: linear-gradient(135deg, #ff8c42, #ff6a00) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 15px;
+  padding: 14px 20px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hover / active alinhados com o comportamento dos cards */
+.word-btn:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.16);
+  background: linear-gradient(135deg, #ff6a00, #ff8c42) !important;
+}
+.word-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.10);
+}
+
+/* quando a palavra já foi feita (mantemos seu estilo verde) */
+.word-btn.done {
+  background: linear-gradient(135deg, #66bb6a, #2e7d32) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 14px rgba(46,125,50,0.25);
+  cursor: default;
+}
+
+/* pílulas do modal: mesmas cores, formato mais compacto */
+.small-word-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff8c42, #ff6a00);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hover para botão do modal */
+.small-word-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 22px rgba(0,0,0,0.12);
+  background: linear-gradient(135deg, #ff6a00, #ff8c42);
+}
+
+/* quando modal mostra palavras já feitas (opcional) */
+.small-word-btn.done {
+  background: linear-gradient(135deg, #e9e9e9, #dcdcdc);
+  color: #444;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* pequenas adaptações mobile */
+@media (max-width: 520px) {
+  .word-btn { padding: 11px 14px; font-size: 1rem; }
+  .small-word-btn { padding: 10px 12px; font-size: 0.95rem; }
+}
+
+/* ============================
+   AJUSTE DAS PALAVRAS DO MODAL
+   compactas + centralizadas
+   ============================ */
+
+/* container da lista no modal */
+.saved-list-scroll ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center; /* centraliza os botões */
+}
+
+/* botão compacto, centralizado e menor */
+.small-word-btn {
+  width: 70%; /* deixa menor — ajuste se quiser 60% / 75% */
+  min-width: 180px;
+  max-width: 260px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, #ff8c42, #ff6a00) !important;
+  color: #fff !important;
+
+  text-align: center; /* centraliza texto */
+  font-weight: 700;
+  font-size: 1rem;
+
+  border: none !important;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center; /* garante centralização */
+  align-items: center;
+
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+/* hover */
+.small-word-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+  background: linear-gradient(135deg, #ff6a00, #ff8c42) !important;
+}
+
+/* responsividade */
+@media (max-width: 480px) {
+  .small-word-btn {
+    width: 85%;
+    font-size: 0.9rem;
+    padding: 8px 10px;
+  }
+}

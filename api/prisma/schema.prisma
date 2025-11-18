@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 enum Role {
@@ -20,41 +20,42 @@ enum Level {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
+  id String @id @default(cuid())
+  name String
+  email String @unique
   passwordHash String
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role Role @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   attempts Attempt[]
   progress Progress?
+  userGeneratedWords UserGeneratedWord[]
 }
 
 model Activity {
-  id          String   @id @default(cuid())
-  title       String
+  id String @id @default(cuid())
+  title String
   description String
-  level       Level
-  mediaUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  level Level
+  mediaUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   attempts Attempt[]
 }
 
 model Attempt {
-  id          String    @id @default(cuid())
-  userId      String
-  activityId  String
-  startedAt   DateTime  @default(now())
+  id String @id @default(cuid())
+  userId String
+  activityId String
+  startedAt DateTime @default(now())
   completedAt DateTime?
-  correct     Boolean
-  score       Int       @default(0)
-  details     Json?
+  correct Boolean
+  score Int @default(0)
+  details Json?
 
-  user     User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
   activity Activity @relation(fields: [activityId], references: [id])
 
   @@index([userId])
@@ -62,12 +63,47 @@ model Attempt {
 }
 
 model Progress {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  level     Level    @default(INICIAL)
-  xp        Int      @default(0)
-  streak    Int      @default(0)
+  id String @id @default(cuid())
+  userId String @unique
+  level Level @default(INICIAL)
+  xp Int @default(0)
+  streak Int @default(0)
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+///////////////////////////////////////////////
+// Generated words (global) + link por usuário
+///////////////////////////////////////////////
+
+model GeneratedWord {
+  id String @id @default(cuid())
+  word String
+  level Int
+  times Int @default(1)
+  source String? // "openai" | "fallback" | null
+  createdAt DateTime @default(now())
+
+  // evita duplicates *por nível*
+  @@unique([word, level])
+  @@index([level])
+
+  // relação com usuário que marcou/fez essa palavra (junction table)
+  userGeneratedWords UserGeneratedWord[]
+}
+
+model UserGeneratedWord {
+  id String @id @default(cuid())
+  userId String
+  generatedWordId String
+  times Int @default(1)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  generatedWord GeneratedWord @relation(fields: [generatedWordId], references: [id])
+
+  @@index([userId])
+  @@index([generatedWordId])
+  @@unique([userId, generatedWordId])
 }

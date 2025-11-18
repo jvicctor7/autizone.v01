@@ -98,7 +98,7 @@ export const userApi = {
 // ============ ACTIVITIES / PROGRESS ============
 export const activitiesApi = {
   // manda para o back: "o usuário fez a palavra X do nível Y"
-  trackWord: ({ level, word, correct = true, xpGain  }) =>
+  trackWord: ({ level, word, correct = true, xpGain }) =>
     api("/activities/track-word", {
       method: "POST",
       body: { level, word, correct, xpGain },
@@ -119,6 +119,13 @@ export const progressApi = {
 export const wordsApi = {
   getByLevel: (level) =>
     api(`/words?level=${level}`, {
+      method: "GET",
+      token: getToken(),
+    }),
+
+  // novo endpoint: listar palavras salvas/geradas para o usuário (por nível)
+  getSaved: () =>
+    api("/words/saved", {
       method: "GET",
       token: getToken(),
     }),

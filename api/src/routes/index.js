@@ -5,7 +5,7 @@ import authRouter from "./auth.routes.js";
 import { usersRouter } from "./users.routes.js";
 import { activitiesRouter } from "./activities.routes.js";
 import { progressRouter } from "./progress.routes.js";
-import { wordsRouter } from "./words.routes.js";
+import  wordsRouter from "./words.routes.js";
 
 export const router = Router();
 

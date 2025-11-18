@@ -1,12 +1,10 @@
 // src/components/MainScreen.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { activitiesApi } from "../services/api";
-import { wordsApi, progressApi } from "../services/api";
+import { activitiesApi, wordsApi, progressApi } from "../services/api";
 import "./MainScreen.css";
 import GameModal from "./GameModal";
 import confetti from "canvas-confetti";
-import logo from "../assets/Autizone.png";
 import arvLogo from "../assets/arv.png";
 import UserMenu from "./UserMenu";
 
@@ -24,49 +22,102 @@ const XP_BY_WORD = {
   3: 16,
 };
 
-// faixas de XP -> nível do aluno
-const XP_LEVEL_STEPS = [0, 60, 140, 240, 360, 500, 680];
+// ✅ MELHOR ESPAÇAMENTO ENTRE NÍVEIS
+const XP_LEVEL_STEPS = [0, 50, 100, 180, 280, 400, 550, 720, 900, 1100, 1300];
+
+// ✅ CONFIGURAÇÃO DOS JOGOS COM ARTZONE
+const GAMES_CONFIG = {
+  artezone: {
+    id: 'artezone',
+    name: '🎨 ArteZone',
+    description: 'Desenhe e solte a criatividade!',
+    unlockLevel: 0,
+    unlockXP: 0,
+    color: '#FF9F43'
+  },
+  interag: {
+    id: 'interag',
+    name: '🎮 Game Interag',
+    description: 'Colete estrelas e evite obstáculos!',
+    unlockLevel: 1,
+    unlockXP: 50,
+    color: '#FF6B6B'
+  },
+  soundExplorer: {
+    id: 'soundExplorer', 
+    name: '🎵 Sound Explorer',
+    description: 'Descubra sons e fonemas!',
+    unlockLevel: 2,
+    unlockXP: 100,
+    color: '#4ECDC4'
+  },
+  wordBuilder: {
+    id: 'wordBuilder',
+    name: '🧩 Word Builder',
+    description: 'Monte palavras com sílabas!',
+    unlockLevel: 3,
+    unlockXP: 180,
+    color: '#45B7D1'
+  },
+  speedChallenge: {
+    id: 'speedChallenge',
+    name: '🚀 Speed Challenge', 
+    description: 'Desafio de velocidade com palavras!',
+    unlockLevel: 4,
+    unlockXP: 280,
+    color: '#96CEB4'
+  },
+  masterQuest: {
+    id: 'masterQuest',
+    name: '🌟 Master Quest',
+    description: 'Desafio final para mestres!',
+    unlockLevel: 5,
+    unlockXP: 400,
+    color: '#FFEAA7'
+  }
+};
 
 function calcPlayerLevel(totalXp) {
-  // percorre até achar a maior faixa que o XP alcançou
   let level = 1;
   for (let i = 0; i < XP_LEVEL_STEPS.length; i++) {
     if (totalXp >= XP_LEVEL_STEPS[i]) {
-      level = i + 1; // porque array começa em 0
+      level = i + 1;
     } else {
       break;
     }
   }
-  return level;
+  return Math.min(level, 10);
 }
 
 export default function MainScreen({ logout }) {
   const navigate = useNavigate();
   const [niveis, setNiveis] = useState(NIVEIS_INICIAIS);
 
-  // 👉 estados só pra recarregar palavras
-  const [loadingNivel, setLoadingNivel] = useState({}); // {1: true, 2: false...}
-  const [msgNivel, setMsgNivel] = useState({}); // {1: "Gerando...", 2: "Erro"...}
+  // loading + mensagens de geração
+  const [loadingNivel, setLoadingNivel] = useState({});
+  const [msgNivel, setMsgNivel] = useState({});
 
-  // correçao botao sair
-  const handleLogout = async () => {
-    try {
-      if (logout) await logout(); // caso o logout venha do contexto
-    } finally {
-      navigate("/login"); // redireciona mesmo se der erro no logout
-    }
-  };
+  // salvar palavras já geradas / feitas pelo usuário
+  const [savedWordsByLevel, setSavedWordsByLevel] = useState({});
 
+  // UI / jogo
   const [nivelSelecionado, setNivelSelecionado] = useState(null);
   const [palavraAtual, setPalavraAtual] = useState(null);
   const [fase, setFase] = useState(0);
   const [nivelCompleto, setNivelCompleto] = useState({});
-  const [jogoDesbloqueado, setJogoDesbloqueado] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [xp, setXp] = useState(0);
   const [playerLevel, setPlayerLevel] = useState(1);
 
-  // ---- ArteZone ----
+  // ✅ SISTEMA DE JOGOS
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [availableGameWords, setAvailableGameWords] = useState([]);
+
+  // modal de lista salva
+  const [savedModalOpen, setSavedModalOpen] = useState(false);
+  const [modalLevelViewing, setModalLevelViewing] = useState(null);
+
+  // artezone / drawing
   const [artePalavra, setArtePalavra] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [roboStatus, setRoboStatus] = useState("normal");
@@ -74,11 +125,11 @@ export default function MainScreen({ logout }) {
   const ctxRef = useRef(null);
   const [drawing, setDrawing] = useState(false);
 
-  // ---- Recompensas ----
+  // recompensas
   const [moedas, setMoedas] = useState(0);
   const [adesivos, setAdesivos] = useState([]);
 
-  // ---- Desafio diário ----
+  // desafio diário
   const [desafioDiario, setDesafioDiario] = useState("");
 
   useEffect(() => {
@@ -92,7 +143,7 @@ export default function MainScreen({ logout }) {
     setDesafioDiario(desafios[dia % desafios.length]);
   }, []);
 
-  // pegar XP salvo no back
+  // pegar XP salvo no back e palavras salvas
   useEffect(() => {
     (async () => {
       try {
@@ -100,26 +151,73 @@ export default function MainScreen({ logout }) {
         const xpServidor = data?.progress?.xp ?? 0;
         setXp(xpServidor);
         setPlayerLevel(calcPlayerLevel(xpServidor));
+
+        // ✅ CORREÇÃO: Buscar palavras salvas corretamente
+        try {
+          const savedResp = await wordsApi.getSaved();
+          console.log('📦 Resposta da API de palavras salvas:', savedResp);
+          
+          const savedWords = savedResp?.words ?? [];
+          console.log('🔍 Palavras recebidas:', savedWords);
+          
+          const grouped = {};
+          for (const wordData of savedWords) {
+            const word = wordData.word || wordData;
+            const level = wordData.level || 1;
+            
+            const lvl =
+              typeof level === "string"
+                ? { INICIAL: 1, BASICO: 2, INTERMEDIARIO: 3, AVANCADO: 4 }[level] ?? 1
+                : Number(level) || 1;
+                
+            grouped[lvl] = grouped[lvl] || new Set();
+            grouped[lvl].add(String(word).toLowerCase());
+          }
+          
+          console.log('🗂️ Palavras agrupadas por nível:', grouped);
+          setSavedWordsByLevel(grouped);
+          
+        } catch (e) {
+          console.warn("Não foi possível carregar palavras salvas:", e.message);
+        }
       } catch (err) {
         console.warn("Não deu pra carregar XP do servidor:", err.message);
       }
     })();
   }, []);
 
+  // ✅ Debug para palavras salvas
+  useEffect(() => {
+    console.log('🔄 savedWordsByLevel atualizado:', savedWordsByLevel);
+  }, [savedWordsByLevel]);
+
+  // trava o scroll do body quando modal de palavras salvas está aberto
+  useEffect(() => {
+    if (savedModalOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+    return () => document.body.classList.remove("modal-open");
+  }, [savedModalOpen]);
+
   // ====== Voz ======
   const falar = (texto) => {
-    const utterance = new SpeechSynthesisUtterance(texto);
-    utterance.lang = "pt-BR";
-    speechSynthesis.speak(utterance);
+    try {
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = "pt-BR";
+      speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn("Falar falhou:", e.message);
+    }
   };
 
-  // ====== Fases ======
+  // iniciadores e escolha
   const iniciarNivel = (nivel) => {
     setNivelSelecionado(nivel);
     setPalavraAtual(null);
     setFase(0);
   };
-
   const escolherPalavra = (palavra) => {
     setPalavraAtual(palavra);
     setFase(0);
@@ -127,41 +225,29 @@ export default function MainScreen({ logout }) {
 
   // ====== NOVAS PALAVRAS (com loading e mensagem) ======
   const recarregarNivel = async (nivel) => {
-    // liga o loading desse nível
     setLoadingNivel((prev) => ({ ...prev, [nivel]: true }));
     setMsgNivel((prev) => ({ ...prev, [nivel]: "Gerando novas palavras..." }));
 
     try {
-      const res = await fetch(`http://localhost:3333/api/words?level=${nivel}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const data = await res.json();
+      const data = await wordsApi.getByLevel(nivel);
+      let serverWords = data?.words ?? [];
+      serverWords = serverWords.map((w) => (w || "").toLowerCase());
 
-      console.log("✨ Novas palavras recebidas:", data);
+      const savedSet = savedWordsByLevel[nivel] ?? new Set();
+      const filtered = serverWords.filter((w) => !savedSet.has(w));
+      const unique = [...new Set(filtered)];
+      const finalWords = unique.length ? unique : [...new Set(serverWords)];
 
-      if (data?.words?.length) {
-        // atualiza lista
-        setNiveis((prev) => ({
-          ...prev,
-          [nivel]: data.words,
-        }));
-        // mensagem de sucesso
-        setMsgNivel((prev) => ({
-          ...prev,
-          [nivel]: "✅ Novas palavras geradas!",
-        }));
-       
-        setTimeout(() => {
-          setMsgNivel ((prev) => ({ ...prev, [nivel]: "" }));
-        }, 4000);
-      } else {
-        // fallback: não veio nada
-        setMsgNivel((prev) => ({
-          ...prev,
-          [nivel]: "⚠️ Não vieram palavras novas. Tente de novo.",
-        }));
-        console.warn("⚠️ Nenhuma palavra recebida do servidor. Usando fallback.");
-      }
+      setNiveis((prev) => ({ ...prev, [nivel]: finalWords }));
+
+      setMsgNivel((prev) => ({
+        ...prev,
+        [nivel]: `✅ Novas palavras geradas! (${finalWords.length})`,
+      }));
+
+      setTimeout(() => {
+        setMsgNivel((prev) => ({ ...prev, [nivel]: "" }));
+      }, 4000);
     } catch (err) {
       console.error("Erro ao recarregar palavras:", err);
       setMsgNivel((prev) => ({
@@ -169,74 +255,121 @@ export default function MainScreen({ logout }) {
         [nivel]: "❌ Erro ao gerar palavras.",
       }));
     } finally {
-      // desliga loading
       setLoadingNivel((prev) => ({ ...prev, [nivel]: false }));
     }
   };
 
+  // ===== Mostrar modal de palavras salvas do nível
+  const openSavedModalForLevel = (level) => {
+    setSavedModalOpen(true);
+    setModalLevelViewing(level);
+  };
+
+  // ====== Próximo (avança fases / finaliza palavra) ======
   const proximo = async () => {
-  // Se ainda está nas fases 0 ou 1, apenas avança
-  if (fase < 2) {
-    setFase((prev) => prev + 1);
-    return;
-  }
+    if (fase < 2) {
+      setFase((prev) => prev + 1);
+      return;
+    }
 
-  // Calcula XP do nível atual
-  const ganho = XP_BY_WORD[nivelSelecionado] ?? 8;
+    if (!nivelSelecionado || !palavraAtual) {
+      setPalavraAtual(null);
+      return;
+    }
 
-  try {
-    // Envia tentativa para o backend
-    const res = await activitiesApi.trackWord({
-      level: nivelSelecionado,
-      word: palavraAtual,
-      correct: true,
-      xpGain: ganho,
-    });
+    const ganho = XP_BY_WORD[nivelSelecionado] ?? 8;
 
-    // Atualiza XP com o valor do servidor (ou local se der erro)
-    if (res && typeof res.xp === "number") {
-      setXp(res.xp);
-      setPlayerLevel(calcPlayerLevel(res.xp));
-      console.log(`✅ XP atualizado pelo backend: ${res.xp}`);
-    } else {
+    try {
+      const res = await activitiesApi.trackWord({
+        level: nivelSelecionado,
+        word: palavraAtual,
+        correct: true,
+        xpGain: ganho,
+      });
+
+      if (res && typeof res.xp === "number") {
+        setXp(res.xp);
+        setPlayerLevel(calcPlayerLevel(res.xp));
+      } else {
+        setXp((prev) => {
+          const novo = prev + ganho;
+          setPlayerLevel(calcPlayerLevel(novo));
+          return novo;
+        });
+      }
+
+      setSavedWordsByLevel((prev) => {
+        const copy = { ...prev };
+        copy[nivelSelecionado] = new Set(copy[nivelSelecionado] || []);
+        copy[nivelSelecionado].add(palavraAtual.toLowerCase());
+        return copy;
+      });
+    } catch (err) {
+      console.error("❌ Erro ao salvar progresso da palavra:", err);
       setXp((prev) => {
         const novo = prev + ganho;
         setPlayerLevel(calcPlayerLevel(novo));
         return novo;
       });
+      setSavedWordsByLevel((prev) => {
+        const copy = { ...prev };
+        copy[nivelSelecionado] = new Set(copy[nivelSelecionado] || []);
+        copy[nivelSelecionado].add(palavraAtual.toLowerCase());
+        return copy;
+      });
+    } finally {
+      const palavraJustCompleted = palavraAtual;
+      setPalavraAtual(null);
+
+      const palavras = niveis[nivelSelecionado] || [];
+      const todasFeitas = palavras.every(
+        (p) => (p || "").toLowerCase() === (palavraJustCompleted || "").toLowerCase()
+      );
+
+      if (todasFeitas) {
+        setNivelCompleto((prev) => ({ ...prev, [nivelSelecionado]: true }));
+        setNivelSelecionado(null);
+      }
     }
-  } catch (err) {
-    console.error("❌ Erro ao salvar progresso da palavra:", err);
-    // Atualiza localmente caso o backend falhe
-    setXp((prev) => {
-      const novo = prev + ganho;
-      setPlayerLevel(calcPlayerLevel(novo));
-      return novo;
-    });
-  } finally {
-    // Reseta palavra atual (volta para lista)
-    setPalavraAtual(null);
-
-    const palavras = niveis[nivelSelecionado] || [];
-    const todasFeitas = palavras.every((p) => p !== palavraAtual);
-    if (todasFeitas && nivelSelecionado !== null) {
-      setNivelCompleto((prev) => ({ ...prev, [nivelSelecionado]: true }));
-      setNivelSelecionado(null);
-    }
-
-    // Desbloqueia jogo se XP total ≥ 30
-    setJogoDesbloqueado((prev) => prev || xp + ganho >= 30);
-  }
-};
-
+  };
 
   const voltar = () => {
     if (fase > 0) {
-      setFase(fase - 1);
+      setFase((prev) => prev - 1);
     } else {
       setPalavraAtual(null);
     }
   };
+
+  // ✅ HANDLER PARA ABRIR JOGOS
+  const handleGameClick = (gameId) => {
+    const currentLevelWords = niveis[playerLevel] || [];
+    const userDoneWords = savedWordsByLevel[playerLevel] || new Set();
+    
+    const availableGameWords = currentLevelWords.filter(word => 
+      !userDoneWords.has(word.toLowerCase())
+    );
+
+    const finalGameWords = availableGameWords.length > 0 
+      ? availableGameWords 
+      : Array.from(userDoneWords).slice(0, 6);
+
+    console.log(`🎮 Preparando jogo ${gameId} com palavras:`, finalGameWords);
+    
+    setSelectedGame(gameId);
+    setAvailableGameWords(finalGameWords);
+    setModalAberto(true);
+  };
+
+  // ✅ VERIFICAR JOGOS DESBLOQUEADOS
+  const unlockedGames = Object.values(GAMES_CONFIG).filter(game => 
+    playerLevel >= game.unlockLevel
+  );
+
+  // ✅ PRÓXIMO JOGO A DESBLOQUEAR
+  const nextGameToUnlock = Object.values(GAMES_CONFIG).find(game => 
+    playerLevel < game.unlockLevel
+  );
 
   const renderFase = () => {
     if (!palavraAtual) return null;
@@ -297,7 +430,7 @@ export default function MainScreen({ logout }) {
     );
   };
 
-  // ====== ArteZone ======
+  // ===== ArteZone =====
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       const canvas = canvasRef.current;
@@ -349,8 +482,8 @@ export default function MainScreen({ logout }) {
 
   const submitDrawing = () => {
     if (artePalavra) {
-      setMoedas(moedas + 5);
-      setAdesivos([...adesivos, artePalavra]);
+      setMoedas((m) => m + 5);
+      setAdesivos((a) => [...a, artePalavra]);
       falar(`Parabéns! Você desenhou uma ${artePalavra} incrível!`);
     } else {
       falar("Parabéns! Você fez uma obra de arte!");
@@ -377,22 +510,40 @@ export default function MainScreen({ logout }) {
     dancando: "https://cdn-icons-gif.flaticon.com/6172/6172531.gif",
   };
 
+  // helper pra checar se palavra foi salva
+  const isWordDone = (level, word) => {
+    const s = savedWordsByLevel[level];
+    return s ? s.has((word || "").toLowerCase()) : false;
+  };
+
+  // função para abrir lista de palavras salvas (botão)
+  const handleOpenSavedList = (level) => {
+    setModalLevelViewing(level);
+    setSavedModalOpen(true);
+  };
+
   return (
     <div className="main-container">
       {/* Navbar */}
       <nav className="navbar">
         <div className="nav-left">
           <img src={arvLogo} alt="Logo Arv" className="logo-img" />
-          <h2 className="logo-text">AutiZone</h2>
+          <h2 className="logo-text">AlphaZone</h2>
         </div>
 
         <UserMenu
           onOpenAccount={() => navigate("/account")}
-          onLogout={handleLogout}
+          onLogout={async () => {
+            try {
+              if (logout) await logout();
+            } finally {
+              navigate("/login");
+            }
+          }}
         />
       </nav>
 
-      {/* Dashboard */}
+      {/* Dashboard Principal */}
       <div className="xp-dashboard-block">
         <h3>🎮 Seu Progresso</h3>
         <p>Nível atual: <strong>{playerLevel}</strong></p>
@@ -400,10 +551,14 @@ export default function MainScreen({ logout }) {
         <div className="xp-bar-container">
           <div
             className="xp-bar"
-            style={{ width: `${Math.min((xp / 30) * 100, 100)}%` }}
+            style={{ width: `${Math.min((xp / (nextGameToUnlock?.unlockXP || 400)) * 100, 100)}%` }}
           ></div>
         </div>
-        <p>{xp < 30 ? `Faltam ${30 - xp} XP para desbloquear o jogo` : "🎉 Jogo desbloqueado!"}</p>
+        {nextGameToUnlock ? (
+          <p>Faltam {nextGameToUnlock.unlockXP - xp} XP para {nextGameToUnlock.name}</p>
+        ) : (
+          <p>🎉 Todos os jogos desbloqueados!</p>
+        )}
       </div>
 
       <div className="levels-grid">
@@ -427,7 +582,6 @@ export default function MainScreen({ logout }) {
                   Iniciar Nível
                 </button>
 
-                {/* 🔁 Botão para gerar novas palavras */}
                 <button
                   className="refresh-btn"
                   onClick={() => recarregarNivel(n)}
@@ -436,15 +590,22 @@ export default function MainScreen({ logout }) {
                 >
                   {loadingNivel[n] ? "⏳ Gerando..." : "🔁 Novas palavras"}
                 </button>
+
+                <button
+                  className="history-btn"
+                  onClick={() => handleOpenSavedList(n)}
+                  title="Ver palavras geradas anteriormente"
+                >
+                  📚 Ver palavras geradas
+                </button>
               </div>
             )}
 
-            {/* mensagenzinha de resultado da geração */}
             {!nivelSelecionado && msgNivel[n] && (
               <p
                 style={{
                   marginTop: "8px",
-                  fontSize: "0.8rem",
+                  fontSize: "0.9rem",
                   color: "#4b1480",
                   fontWeight: 600,
                 }}
@@ -456,15 +617,23 @@ export default function MainScreen({ logout }) {
             {/* --- Quando o nível está selecionado --- */}
             {nivelSelecionado === n && !palavraAtual && (
               <div className="word-selection">
-                {niveis[n].map((p, i) => (
-                  <button
-                    key={i}
-                    className="word-btn"
-                    onClick={() => escolherPalavra(p)}
-                  >
-                    {p}
-                  </button>
-                ))}
+                {/* ===== WRAPPER COM SCROLLER (preserva layout) ===== */}
+                <div className="word-selection-list">
+                  { (niveis[n] || []).map((p, i) => {
+                    const done = isWordDone(n, p);
+                    return (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button
+                          className={`word-btn ${done ? "done" : ""}`}
+                          onClick={() => escolherPalavra(p)}
+                        >
+                          {p}
+                        </button>
+                        {done && <span style={{ color: "#2e7d32", fontSize: 20 }}>✓</span>}
+                      </div>
+                    );
+                  })}
+                </div>
 
                 <button
                   className="cancel-btn"
@@ -482,113 +651,120 @@ export default function MainScreen({ logout }) {
 
       {renderFase()}
 
-      {/* ===== Game Interag ===== */}
-      <div
-        className={`game-container ${
-          jogoDesbloqueado ? "unlocked" : "locked"
-        }`}
-      >
-        <h2>🌈 Game Interag</h2>
-        <p>
-          {jogoDesbloqueado
-            ? "Agora você pode jogar e se divertir!"
-            : "Ganhe XP para desbloquear este jogo divertido!"}
-        </p>
-        <button
-          className="game-btn"
-          disabled={!jogoDesbloqueado}
-          onClick={() => setModalAberto(true)}
-        >
-          {jogoDesbloqueado ? "🎉 Jogar!" : "🔒 Bloqueado"}
-        </button>
-      </div>
-
-      <GameModal isOpen={modalAberto} onClose={() => setModalAberto(false)} />
-
-      {/* ===== ArteZone ===== */}
-      <div className="artezone-container">
-        <h2>🎨 ArteZone</h2>
-        <p>Escolha uma palavra ou use o desafio surpresa!</p>
-        <p className="desafio-diario">📌 {desafioDiario}</p>
-
-        <div className="words-choice">
-          {["Maçã", "Sol", "Casa", "Peixe", "Flor"].map((w) => (
-            <button
-              key={w}
-              className="arte-btn"
-              onClick={() => setArtePalavra(w)}
-            >
-              {w}
-            </button>
-          ))}
-          <button className="surpresa-btn" onClick={desafioSurpresa}>
-            🎲 Surpresa!
-          </button>
-        </div>
-
-        {artePalavra && (
-          <p>
-            🖌 Você vai desenhar: <strong>{artePalavra}</strong>
+      {/* ===== SEÇÃO DE JOGOS CORRIGIDA ===== */}
+      <div className="games-section">
+        <h2>🎮 Jogos Interativos</h2>
+        
+        {/* ✅ DASHBOARD SIMPLES E LIMPO */}
+        <div style={{ 
+          background: 'rgba(255,255,255,0.1)', 
+          padding: '15px', 
+          borderRadius: '10px',
+          marginBottom: '20px',
+          textAlign: 'center'
+        }}>
+          <p style={{ margin: 0, fontSize: '1.1rem' }}>
+            <strong>Nível {playerLevel}</strong> • <strong>{xp} XP</strong> • 
+            <strong> {unlockedGames.length}/{Object.values(GAMES_CONFIG).length} jogos</strong>
           </p>
-        )}
-
-        <canvas
-          ref={canvasRef}
-          width={500}
-          height={350}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseOut={stopDrawing}
-          onTouchStart={startDrawing}
-          onTouchMove={draw}
-          onTouchEnd={stopDrawing}
-        ></canvas>
-
-        <div className="artezone-actions">
-          <button className="artezone-btn" onClick={clearCanvas}>
-            🧽 Limpar
-          </button>
-          <button className="artezone-btn" onClick={submitDrawing}>
-            ✅ Entregar
-          </button>
-        </div>
-
-        {showFeedback && (
-          <div id="artezone-feedback">
-            <img src={roboImgs[roboStatus]} alt="Robôzinho" />
-            <p>🤖 Muito bom! Continue desenhando!</p>
-          </div>
-        )}
-      </div>
-
-      {/* Ranking */}
-      <div className="ranking-container">
-        <h3>📊 Ranking Pessoal</h3>
-        <div className="ranking-stats">
-          <div className="stat-card">
-            <p>Total de desenhos feitos:</p>
-            <strong>{adesivos.length}</strong>
-          </div>
-          <div className="stat-card">
-            <p>Total de XP em desenhos:</p>
-            <strong>{adesivos.length * 5}</strong>
-          </div>
-        </div>
-
-        <h4>🏅 Sua Galeria</h4>
-        <div className="galeria-grid">
-          {adesivos.length === 0 ? (
-            <p>Nenhum desenho ainda... desenhe para encher sua galeria! 🎨</p>
-          ) : (
-            adesivos.map((a, i) => (
-              <span key={i} className="galeria-item">
-                {a}
-              </span>
-            ))
+          {nextGameToUnlock && (
+            <p style={{ margin: '5px 0 0 0', fontSize: '0.9rem', opacity: 0.9 }}>
+              🔼 {nextGameToUnlock.unlockXP - xp} XP para {nextGameToUnlock.name}
+            </p>
           )}
         </div>
+
+        {/* Grid de Jogos */}
+        <div className="games-grid">
+          {Object.values(GAMES_CONFIG).map(game => {
+            const isUnlocked = playerLevel >= game.unlockLevel;
+            const isNextToUnlock = nextGameToUnlock?.id === game.id;
+            
+            return (
+              <div
+                key={game.id}
+                className={`game-card ${isUnlocked ? 'unlocked' : 'locked'} ${
+                  isNextToUnlock ? 'next-unlock' : ''
+                }`}
+                style={{ borderLeft: `4px solid ${game.color}` }}
+              >
+                <h3>{game.name}</h3>
+                <p>{game.description}</p>
+                
+                <div className="game-info">
+                  <span className="level-badge">Nv. {game.unlockLevel}</span>
+                  <span className="xp-badge">{game.unlockXP} XP</span>
+                </div>
+
+                <button
+                  className="game-btn"
+                  disabled={!isUnlocked}
+                  onClick={() => handleGameClick(game.id)}
+                >
+                  {isUnlocked ? '🎉 Jogar!' : '🔒 Bloqueado'}
+                </button>
+
+                {isNextToUnlock && (
+                  <div className="next-unlock-indicator">
+                    ⭐ Próximo a desbloquear!
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Modal de palavras salvas */}
+      {savedModalOpen && (
+        <div className="saved-modal-backdrop" onClick={() => setSavedModalOpen(false)}>
+          <div className="saved-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Palavras geradas — Nível {modalLevelViewing}</h3>
+            <div className="saved-list">
+              {Array.from(savedWordsByLevel[modalLevelViewing] || []).length === 0 ? (
+                <p>Nenhuma palavra salva ainda.</p>
+              ) : (
+                /* ===== WRAPPER COM SCROLLER NO MODAL ===== */
+                <div className="saved-list-scroll" role="list" aria-label="Palavras geradas">
+                  <ul>
+                    {Array.from(savedWordsByLevel[modalLevelViewing] || []).map((w, i) => (
+                      <li key={i}>
+                        <button
+                          className="small-word-btn"
+                          onClick={() => {
+                            setSavedModalOpen(false);
+                            setNivelSelecionado(modalLevelViewing);
+                            setPalavraAtual(w);
+                            setFase(0);
+                          }}
+                        >
+                          {w}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: 12, textAlign: "right" }}>
+              <button onClick={() => setSavedModalOpen(false)} className="cancel-btn">Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal do Jogo */}
+      <GameModal 
+        isOpen={modalAberto} 
+        onClose={() => {
+          setModalAberto(false);
+          setSelectedGame(null);
+        }}
+        gameType={selectedGame}
+        currentLevel={playerLevel}
+        currentXP={xp}
+        availableWords={availableGameWords}
+      />
     </div>
   );
 }
