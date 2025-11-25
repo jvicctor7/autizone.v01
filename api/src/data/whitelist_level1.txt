@@ -8,8 +8,6 @@ com
 copo
 dele
 dela
-dos
-das
 ela
 ele
 era
@@ -43,7 +41,6 @@ nós
 num
 ovo
 pai
-pau
 paz
 pelo
 pipa
@@ -55,7 +52,6 @@ quem
 rato
 rei
 rio
-riz
 rua
 rumo
 sal
@@ -117,7 +113,6 @@ gelo
 gira
 graça
 gula
-haste
 jogo
 justo
 lata
@@ -154,9 +149,7 @@ ola
 onda
 osso
 ouro
-pacto
 paje
-pala
 pano
 papa
 para
@@ -174,7 +167,7 @@ pobre
 pode
 ponta
 porta
-posa
+posar
 posto
 pote
 pulga
@@ -193,7 +186,6 @@ rima
 riso
 roça
 roda
-rola
 roma
 rosa
 rota
@@ -211,10 +203,8 @@ sapo
 sara
 seca
 sede
-seio
 sela
 selo
-sena
 sete
 short
 sina
@@ -222,7 +212,6 @@ sino
 siri
 siso
 sobe
-soca
 soco
 sola
 solta
@@ -246,7 +235,6 @@ time
 tipo
 tira
 toco
-tofu
 toma
 topa
 torre
@@ -270,7 +258,6 @@ verde
 via
 viga
 vila
-vime
 vivo
 volta
 voto

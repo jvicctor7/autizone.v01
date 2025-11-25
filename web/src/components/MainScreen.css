@@ -1211,7 +1211,7 @@ body.modal-open {
 .game-card:nth-child(5) { animation-delay: 0.5s; }
 .game-card:nth-child(6) { animation-delay: 0.6s; }
 
-/* === Forçar pílulas laranja consistentes (colar no final do MainScreen.css) === */
+/* === Forçar pílulas laranja consistentes === */
 
 /* garante que .word-btn tenha exatamente o mesmo visual das pílulas de nível */
 .word-btn {
@@ -1344,4 +1344,31 @@ body.modal-open {
     font-size: 0.9rem;
     padding: 8px 10px;
   }
+}
+
+/* Ajuste do espaçamento entre "Novas palavras" e "Ver palavras geradas" */
+.refresh-btn {
+  display: block;
+  margin: 0 auto 14px auto; /* afasta verticalmente */
+}
+
+.history-btn {
+  display: block;
+  margin: 6px auto 0 auto;
+}
+
+/* Botões "Jogar!" da seção de jogos (segunda imagem) */
+.game-card button,
+.game-card .play-btn,
+.game-card .game-btn {
+  background: linear-gradient(135deg, #ff8c42, #ff6a00) !important;
+  color: #fff !important;
+  border: none;
+}
+
+.game-card button:hover,
+.game-card .play-btn:hover,
+.game-card .game-btn:hover {
+  background: linear-gradient(135deg, #ff6a00, #ff8c42) !important;
+  transform: scale(1.05);
 }

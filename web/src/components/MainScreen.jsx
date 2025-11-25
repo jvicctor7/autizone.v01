@@ -38,7 +38,7 @@ const GAMES_CONFIG = {
   interag: {
     id: 'interag',
     name: '🎮 Game Interag',
-    description: 'Colete estrelas e evite obstáculos!',
+    description: 'Colete os queijos e evite os gatos!',
     unlockLevel: 1,
     unlockXP: 50,
     color: '#FF6B6B'
@@ -594,9 +594,9 @@ export default function MainScreen({ logout }) {
                 <button
                   className="history-btn"
                   onClick={() => handleOpenSavedList(n)}
-                  title="Ver palavras geradas anteriormente"
+                  title="Ver palavras feitas anteriormente"
                 >
-                  📚 Ver palavras geradas
+                  📚 Lista de palavras feitas
                 </button>
               </div>
             )}

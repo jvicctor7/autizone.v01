@@ -1,13 +1,13 @@
-papagaio
-novidade
+abacateiro
+abanador
 acampamento
-escalada
 dinossauro
 dispositivo
 divertimento
+adivinhação
 alfinete
-biblioteca
 beija-flor
+biblioteca
 foguete
 formigueiro
 fornalha
@@ -110,6 +110,7 @@ enormidade
 ensopado
 entardecer
 entusiasmo
+escalada
 esconderijo
 escorregador
 espetáculo
@@ -188,6 +189,7 @@ namorada
 navio
 necessário
 noticiário
+novidade
 oculista
 organização
 ouriço
@@ -198,6 +200,7 @@ palhaço
 pamonha
 panificadora
 panteiro
+papagaio
 paralelepípedo
 parque
 passageiro
